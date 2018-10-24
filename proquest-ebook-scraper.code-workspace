@@ -7,5 +7,7 @@
 			"path": "/Users/Jan/Sites/proquest-scraper"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"editor.tabSize": 2
+	}
 }
