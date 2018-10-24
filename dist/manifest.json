@@ -1,26 +1,28 @@
-{
-    "manifest_version": 2,
-
-    "name": "Chrome Extension (built with TypeScript + React)",
-    "description":
-        "A boilerplate project to quickly build a Chrome extension using TypeScript and React (built using webpack).",
+  {
+    "name": "Ebook Scraper",
     "version": "1.0.0",
-
-    "browser_action": {
-        "default_icon": "icon16.png",
-        "default_popup": "popup.html"
-    },
-
+    "description": "Save Ebook pages as a PDF",
+    "manifest_version": 2,
     "background": {
         "scripts": ["js/eventPage.js"],
-        "persistent": false
+        "persistent": true
     },
-
+    "page_action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icon.png"
+        }
+    },
     "icons": {
-        "16": "icon16.png",
-        "48": "icon48.png",
-        "128": "icon128.png"
+        "16": "icon.png"
     },
-
-    "permissions": []
-}
+    "permissions": [
+        "tabs",
+        "declarativeContent",
+        "storage",
+        "downloads",
+        "webRequest",
+        "*://*.dawsonera.com/",
+        "*://*.proquest.com/"
+    ]
+  }
