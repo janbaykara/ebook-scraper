@@ -1,3 +1,5 @@
 dist/js
 node_modules
 yarn-error\.log
+
+*.log
