@@ -1,4 +1,11 @@
-import { isPageUrl, getBookURL, getURL, createPDF } from "./common/utils";
+import {
+  isPageUrl,
+  getBookURL,
+  getURL,
+  createPDF,
+  getBook,
+  move
+} from "./common/utils";
 
 const ebookReaderDomains = [
   "dawsonera.com/readonline",
@@ -8,31 +15,33 @@ const ebookReaderDomains = [
 chrome.runtime.onInstalled.addListener(() => {
   // Listen to messages sent from other parts of the extension.
   chrome.runtime.onMessage.addListener(
-    (request: ScraperMessage, sender, sendResponse) => {
+    async (request: ScraperMessage, sender, sendResponse) => {
       // onMessage must return "true" if response is async.
       let isResponseAsync = false;
 
-      if (request.action === 'ClearBook') {isResponseAsync
-        isResponseAsync = true
-        chrome.storage.local.remove(request.bookURL, () => sendResponse(null))
+      if (request.action === "ClearBook") {
+        isResponseAsync = true;
+        chrome.storage.local.remove(request.bookURL, () => {
+          console.log("deleted!");
+          sendResponse(null);
+        });
       }
 
       if (request.action === "SaveBook") {
-        chrome.storage.local.set({ [request.book.url]: request.book });
+        isResponseAsync = true;
+        chrome.storage.local.set({ [request.book.url]: request.book }, () =>
+          sendResponse(request.book)
+        );
       }
 
-      if (request.action === 'RequestDownload') {
-        console.info('Download requested!')
+      if (request.action === "UpdatePageOrder") {
+        isResponseAsync = true;
+        asyncUpdatePageOrder(request, sendResponse);
+      }
 
-        chrome.storage.local.get(
-          request.bookURL,
-          (store?: LocalStorageData) => {
-            const book = store[request.bookURL];
-            if (book) {
-              createPDF(book);
-            }
-          }
-        );
+      if (request.action === "RequestDownload") {
+        isResponseAsync = true;
+        asyncDownload(request, sendResponse);
       }
 
       return isResponseAsync;
@@ -59,8 +68,30 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+const asyncUpdatePageOrder: MessageResponse<Messages.UpdatePageOrder> = async (
+  { oldIndex, newIndex, numPages, bookURL },
+  sendResponse
+) => {
+  const book = await getBook(bookURL);
+  if (!book) return Promise.reject(false);
+  book.pages = move(book.pages, oldIndex, newIndex, numPages);
+  chrome.storage.local.set({ [bookURL]: book }, () => sendResponse(book));
+};
+
+const asyncDownload: MessageResponse<Messages.RequestDownload> = async (
+  { bookURL },
+  sendResponse
+) => {
+  const book = await getBook(bookURL);
+  if (book) {
+    createPDF(book);
+    sendResponse(book);
+  }
+  sendResponse(false);
+};
+
 const postBookUpdate = (book: Book) => {
-  const message: Messages.BookWasUpdated = { action: 'BookWasUpdated', book };
+  const message: Messages.BookWasUpdated = { action: "BookWasUpdated", book };
   chrome.runtime.sendMessage(message);
 };
 
@@ -74,7 +105,7 @@ const interceptPageResources = async (
       if (book && book.pages && Array.isArray(book.pages)) {
         console.info(`Updating book ${book.url} (${book.pages.length})`);
         book.pages.push(request.url);
-        book.pages = Array.from(new Set(book.pages))
+        book.pages = Array.from(new Set(book.pages));
         chrome.storage.local.set({ [bookURL]: book }, () =>
           postBookUpdate(book)
         );

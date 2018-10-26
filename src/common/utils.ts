@@ -9,7 +9,7 @@ export function getURL(): Promise<URL | undefined> {
         return resolve(new URL(url));
       });
     } catch (e) {
-      reject();
+      reject(e);
     }
   });
 }
@@ -40,12 +40,27 @@ export function isPageUrl(url: URL): boolean {
   return false;
 }
 
+export const getBook = (url: string): Promise<Book | null> =>
+  new Promise((resolve, reject) => {
+    chrome.storage.local.get(url, (store?: LocalStorageData) => {
+      const book = store[url];
+      if (book) {
+        return resolve(book);
+      }
+      return resolve(null);
+    });
+  });
+
 export function createPDF(book: Book): Promise<jsPDF> {
   return new Promise(async (resolve, reject) => {
     try {
+      if (!book.pages) {
+        reject("Book has no pages to construct a PDF from");
+      }
+
       // create a document and pipe to a blob
       let images: {
-        [key: string]: { image: HTMLImageElement, blobURI: string };
+        [key: string]: { image: HTMLImageElement; blobURI: string };
       } = {};
 
       const fetchedImages = await Promise.all(
@@ -56,15 +71,19 @@ export function createPDF(book: Book): Promise<jsPDF> {
             image.onload = () => {
               images[url] = { image, blobURI };
               if (blobURI) {
-                resolve(true)
+                resolve(true);
               } else {
-                reject(false)
+                reject("Couldn't fetch image for page URL");
               }
             };
             image.src = blobURI;
-          })
+          });
         })
       );
+
+      if (!fetchedImages) {
+        reject("Couldn't fetch images for all pages");
+      }
 
       // Define the dimensions of the doc
       const templatePage = Object.values(images)[0];
@@ -73,8 +92,8 @@ export function createPDF(book: Book): Promise<jsPDF> {
         format: [templatePage.image.width, templatePage.image.height]
       });
 
-      const width = (doc.internal.pageSize as any).getWidth()
-      const height = (doc.internal.pageSize as any).getHeight()
+      const width = (doc.internal.pageSize as any).getWidth();
+      const height = (doc.internal.pageSize as any).getHeight();
 
       book.pages.forEach((url, i, arr) => {
         const { blobURI } = images[url];
@@ -87,7 +106,7 @@ export function createPDF(book: Book): Promise<jsPDF> {
       doc.save(`book-section-${book.url}.pdf`);
       resolve(doc);
     } catch (e) {
-      return reject();
+      return reject(e);
     }
   });
 }
@@ -104,4 +123,16 @@ export function fetchAsBlob(path: string): Promise<string> {
         a.readAsDataURL(blob);
       });
   });
+}
+
+/**
+ *
+ * @param array
+ * @param from Starting index
+ * @param to Finishing index
+ * @param on How many elements to move from 'from' (starting index)
+ */
+export function move<T extends any[]>(array: T, from, to, on = 1) {
+  array.splice(to, 0, ...array.splice(from, on));
+  return array;
 }

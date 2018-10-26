@@ -3230,6 +3230,12 @@ react-is@^16.3.1:
   version "16.6.0"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.6.0.tgz#456645144581a6e99f6816ae2bd24ee94bdd0c01"
 
+react-spring@^6.1.2:
+  version "6.1.2"
+  resolved "https://registry.yarnpkg.com/react-spring/-/react-spring-6.1.2.tgz#34aeb46b1f3c6aa217ca8ea2bfb9e5267af84bab"
+  dependencies:
+    "@babel/runtime" "^7.1.2"
+
 react@^16.2.0:
   version "16.5.2"
   resolved "https://registry.yarnpkg.com/react/-/react-16.5.2.tgz#19f6b444ed139baa45609eee6dc3d318b3895d42"

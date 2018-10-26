@@ -7,20 +7,27 @@ interface Book {
 
 declare namespace Messages {
   interface RequestDownload {
-    action: 'RequestDownload',
-    bookURL: string
+    action: "RequestDownload";
+    bookURL: string;
   }
   interface SaveBook {
-    action: 'SaveBook',
-    book: Book
+    action: "SaveBook";
+    book: Book;
   }
   interface BookWasUpdated {
-    action: 'BookWasUpdated',
-    book: Book
+    action: "BookWasUpdated";
+    book: Book;
   }
   interface ClearBook {
-    action: 'ClearBook'
-    bookURL: string
+    action: "ClearBook";
+    bookURL: string;
+  }
+  interface UpdatePageOrder {
+    action: "UpdatePageOrder";
+    bookURL: string;
+    oldIndex: number;
+    newIndex: number;
+    numPages?: number;
   }
 }
 
@@ -28,6 +35,13 @@ type ScraperMessage =
   | Messages.SaveBook
   | Messages.RequestDownload
   | Messages.BookWasUpdated
-  | Messages.ClearBook;
+  | Messages.ClearBook
+  | Messages.UpdatePageOrder;
 
-interface LocalStorageData { [key: string]: Book }
+type MessageResponse<T extends ScraperMessage = ScraperMessage> = (
+  request: T,
+  sendResponse: (data: any) => void
+) => void;
+interface LocalStorageData {
+  [key: string]: Book;
+}

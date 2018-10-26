@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./Popup.scss";
-import { Heading, Box, Card, Flex, Text, Button } from "rebass";
+import { Heading, Box, Card, Flex, Text, Button, Image } from "rebass";
 import { getURL, getBookURL, getBook } from "../common/utils";
 
 interface AppProps {}
@@ -8,10 +8,13 @@ interface AppProps {}
 interface AppState {
   pageNumber?: number;
   book?: Book;
+  displayPages: boolean;
 }
 
 export default class Popup extends React.Component<AppProps, AppState> {
-  state: AppState = {};
+  state: AppState = {
+    displayPages: false
+  };
 
   constructor(props: AppProps, state: AppState) {
     super(props, state);
@@ -38,8 +41,8 @@ export default class Popup extends React.Component<AppProps, AppState> {
     );
   }
 
-  fetchBook = async () => {
-    const _url = await getURL();
+  toggleDisplayPages = (displayPages = !this.state.displayPages) =>
+    this.setState({ displayPages });
 
   fetchBook = (): Promise<Book> => {
     console.log("fetching book");
@@ -91,38 +94,15 @@ export default class Popup extends React.Component<AppProps, AppState> {
     await chrome.runtime.sendMessage(message, this.fetchBook);
   };
 
-    if (_url) {
-      const url = getBookURL(_url);
-      chrome.storage.local.get(url, (store?: LocalStorageData) => {
-        const book = store[url];
-        if (book && book.pages && book.pages.length) {
-          this.setState({ book });
-        } else {
-          const book: Book = { url, pages: [] };
-          const message: Messages.SaveBook = { action: "SaveBook", book };
-          chrome.runtime.sendMessage(message);
-          this.setState({ book });
-        }
-      });
-    }
-  };
-
-  download = async () => {
+  updatePageOrder = async (oldIndex: number, newIndex: number) => {
     if (!this.state.book.url) return;
-    const message: Messages.RequestDownload = {
-      action: "RequestDownload",
-      bookURL: this.state.book.url
+    const message: Messages.UpdatePageOrder = {
+      action: "UpdatePageOrder",
+      bookURL: this.state.book.url,
+      oldIndex,
+      newIndex
     };
-    chrome.runtime.sendMessage(message);
-  };
-
-  reset = async () => {
-    if (!this.state.book.url) return;
-    const message: Messages.ClearBook = {
-      action: "ClearBook",
-      bookURL: this.state.book.url
-    };
-    chrome.runtime.sendMessage(message, this.fetchBook);
+    await chrome.runtime.sendMessage(message, this.fetchBook);
   };
 
   render() {
@@ -164,11 +144,49 @@ export default class Popup extends React.Component<AppProps, AppState> {
                 Pages will be collected as you navigate through the book
               </Button>
             )}
-            <Button onClick={this.download} css={{ width: "100%" }}>
-              💾 Download PDF ({this.state.book.pages.length} pages)
-            </Button>
           </>
         )}
+        {this.state.book &&
+          this.state.book.pages &&
+          this.state.book.pages.length > 0 && (
+            <Box my={1}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={this.state.displayPages}
+                  onChange={() => this.toggleDisplayPages()}
+                />
+                Show pages
+              </label>
+            </Box>
+          )}
+        {this.state.displayPages &&
+          this.state.book &&
+          this.state.book.pages.map((url, i, arr) => (
+            <Flex key={url} alignItems="center">
+              <Box>
+                <Image src={url} my={1} width={0.95} height="100px" />
+              </Box>
+              <Flex flexDirection="column" justifyContent="around" width={0.05}>
+                {i > 0 && (
+                  <Text
+                    css={{ cursor: "pointer" }}
+                    onClick={() => this.updatePageOrder(i, i - 1)}
+                  >
+                    ⬆️
+                  </Text>
+                )}
+                {i + 1 < arr.length && (
+                  <Text
+                    css={{ cursor: "pointer" }}
+                    onClick={() => this.updatePageOrder(i, i + 1)}
+                  >
+                    ⬇️
+                  </Text>
+                )}
+              </Flex>
+            </Flex>
+          ))}
       </Box>
     );
   }
