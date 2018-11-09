@@ -1,17 +1,17 @@
 import * as jsPDF from "jspdf";
 
-export function getURL(): Promise<URL | undefined> {
-  return new Promise((resolve, reject) => {
-    try {
-      chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
-        if (!tabs.length) return null;
-        const url = tabs[0].url;
-        return resolve(new URL(url));
-      });
-    } catch (e) {
-      reject(e);
-    }
+export function getActiveTab(): Promise<false | chrome.tabs.Tab> {
+  return new Promise(resolve => {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+      if (!tabs.length) return resolve(false);
+      return resolve(tabs[0]);
+    });
   });
+}
+
+export async function getURL(): Promise<false | URL> {
+  const tab = await getActiveTab();
+  return tab ? new URL(tab.url) : false;
 }
 
 export function getBookURL(url: URL): string {
@@ -70,7 +70,7 @@ export function extractPageImageURL(
 }
 
 export const getBook = (url: string): Promise<Book | null> =>
-  new Promise((resolve, reject) => {
+  new Promise(resolve => {
     chrome.storage.local.get(url, (store?: LocalStorageData) => {
       const book = store[url];
       if (book) {

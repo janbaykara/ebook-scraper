@@ -33,7 +33,7 @@ export default class Popup extends React.Component<AppProps, AppState> {
         let isResponseAsync = false;
 
         if (request.action === "BookWasUpdated") {
-          this.setState({ book: request.book });
+          this.setState({ book: request.book || undefined });
         }
 
         return isResponseAsync;
@@ -82,7 +82,7 @@ export default class Popup extends React.Component<AppProps, AppState> {
       action: "RequestDownload",
       bookURL: this.state.book.url
     };
-    await chrome.runtime.sendMessage(message);
+    return await chrome.runtime.sendMessage(message);
   };
 
   reset = async () => {
@@ -91,7 +91,7 @@ export default class Popup extends React.Component<AppProps, AppState> {
       action: "ClearBook",
       bookURL: this.state.book.url
     };
-    await chrome.runtime.sendMessage(message, this.fetchBook);
+    return await chrome.runtime.sendMessage(message, this.fetchBook);
   };
 
   updatePageOrder = async (oldIndex: number, newIndex: number) => {
@@ -102,7 +102,7 @@ export default class Popup extends React.Component<AppProps, AppState> {
       oldIndex,
       newIndex
     };
-    await chrome.runtime.sendMessage(message, this.fetchBook);
+    return await chrome.runtime.sendMessage(message, this.fetchBook);
   };
 
   render() {

@@ -16,7 +16,7 @@ declare namespace Messages {
   }
   interface BookWasUpdated {
     action: "BookWasUpdated";
-    book: Book;
+    book: Book | false;
   }
   interface ClearBook {
     action: "ClearBook";

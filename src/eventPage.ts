@@ -17,6 +17,8 @@ const ebookReaderDomains = [
 let lastURL;
 
 chrome.runtime.onInstalled.addListener(() => {
+  updatePageAction();
+
   // Listen to messages sent from other parts of the extension.
   chrome.runtime.onMessage.addListener(
     async (request: ScraperMessage, sender, sendResponse) => {
@@ -26,17 +28,14 @@ chrome.runtime.onInstalled.addListener(() => {
       if (request.action === "ClearBook") {
         isResponseAsync = true;
         lastURL = null;
-        chrome.storage.local.remove(request.bookURL, () => {
-          console.log("deleted!");
+        deleteBook(request.bookURL, () => {
           sendResponse(null);
         });
       }
 
       if (request.action === "SaveBook") {
         isResponseAsync = true;
-        chrome.storage.local.set({ [request.book.url]: request.book }, () =>
-          sendResponse(request.book)
-        );
+        saveBook(request.book, () => sendResponse(request.book));
       }
 
       if (request.action === "UpdatePageOrder") {
@@ -80,7 +79,7 @@ const asyncUpdatePageOrder: MessageResponse<Messages.UpdatePageOrder> = async (
   const book = await getBook(bookURL);
   if (!book) return Promise.reject(false);
   book.pages = move(book.pages, oldIndex, newIndex, numPages);
-  chrome.storage.local.set({ [bookURL]: book }, () => sendResponse(book));
+  saveBook(book, () => sendResponse(book));
 };
 
 const asyncDownload: MessageResponse<Messages.RequestDownload> = async (
@@ -95,43 +94,60 @@ const asyncDownload: MessageResponse<Messages.RequestDownload> = async (
   sendResponse(false);
 };
 
-const savePage = async (pageImageURL: string) => {
-  return new Promise(async resolve => {
-    const bookURL = await getBookURL(await getURL());
-    chrome.storage.local.get(bookURL, (store?: LocalStorageData) => {
-      const book = store[bookURL];
-
-      // Predicates
-      const bookIsValid = !!book && book.pages && Array.isArray(book.pages);
-      if (bookIsValid) {
-        const pageIsAlreadyInTheBook = book.pages.indexOf(pageImageURL) > -1;
-        if (pageIsAlreadyInTheBook) return resolve();
-        // Try to append images to existing books
-        console.info(`Updating book ${book.url} (${book.pages.length})`);
-        book.pages.push(pageImageURL);
-        book.pages = Array.from(new Set(book.pages));
-        chrome.storage.local.set(
-          { [bookURL]: book },
-          () => void resolve() && postBookUpdate(book)
-        );
-      } else {
-        // Or else start a new one init
-        const newBook: Book = { url: bookURL, pages: [pageImageURL] };
-        console.info(
-          `Creating new book ${newBook.url} (${newBook.pages.length})`
-        );
-        chrome.storage.local.set(
-          { [bookURL]: newBook },
-          () => void resolve() && postBookUpdate(book)
-        );
-      }
-    });
+const savePage = (pageImageURL: string): Promise<boolean> => {
+  return new Promise(async (resolve, reject) => {
+    const url = await getURL();
+    if (!url) return reject();
+    const bookURL = await getBookURL(url);
+    const book = await getBook(bookURL);
+    const bookIsValid = !!book && book.pages && Array.isArray(book.pages);
+    if (bookIsValid) {
+      const pageIsAlreadyInTheBook = book.pages.indexOf(pageImageURL) > -1;
+      if (pageIsAlreadyInTheBook) return resolve(true);
+      // Try to append images to existing books
+      book.pages.push(pageImageURL);
+      book.pages = Array.from(new Set(book.pages));
+      console.info(`Updating book`);
+      saveBook(book, () => resolve(true));
+    } else {
+      // Or else start a new one init
+      const newBook: Book = { url: bookURL, pages: [pageImageURL] };
+      console.info(`Creating new book`);
+      saveBook(newBook, () => resolve(true));
+    }
   });
 };
 
-const postBookUpdate = (book: Book) => {
+const saveBook = (book: Book, cb = (): any => null) => {
+  if (
+    !(
+      book &&
+      book.url &&
+      book.url !== "undefined" &&
+      typeof book.url !== "undefined"
+    )
+  ) {
+    return;
+  }
+  chrome.storage.local.set({ [book.url]: book }, () => {
+    console.log(`Saved book: ${book.url} (${book.pages.length})`);
+    postBookUpdate(book);
+    cb();
+  });
+};
+
+const deleteBook = (bookUrl: string, cb = (): any => null) => {
+  chrome.storage.local.remove(bookUrl, () => {
+    console.log(`Deleted book: ${bookUrl}`);
+    postBookUpdate(false);
+    cb();
+  });
+};
+
+const postBookUpdate = async (book: Book | false) => {
   const message: Messages.BookWasUpdated = { action: "BookWasUpdated", book };
-  chrome.runtime.sendMessage(message);
+  updatePageAction();
+  return await chrome.runtime.sendMessage(message);
 };
 
 const interceptPageResources = async (
@@ -144,7 +160,11 @@ const interceptPageResources = async (
   // Attempt to fetch the underlying image URL (e.g. acquire base64 data urls, image urls, etc.)
   const pageImageURL = await extractPageImageURL(request);
   if (!pageImageURL) return;
-  return savePage(pageImageURL);
+  try {
+    return savePage(pageImageURL);
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 const pageResourceURLFilter: chrome.webRequest.RequestFilter = {
@@ -156,3 +176,30 @@ chrome.webRequest.onCompleted.addListener(
   interceptPageResources,
   pageResourceURLFilter
 );
+
+const updatePageAction = async () => {
+  const tab = await getActiveTab();
+  const url = await getURL();
+  if (!url) throw new Error();
+  const bookURL = await getBookURL(url);
+  const book = await getBook(bookURL);
+  if (!book || !tab) return;
+
+  var canvas = document.createElement("canvas");
+  var img = document.createElement("img");
+
+  img.onload = function() {
+    var ctx = canvas.getContext("2d");
+
+    /* Page count */
+    ctx.font = "bold 30px Arial";
+    ctx.fillStyle = "blue";
+    ctx.fillText(`${book.pages.length}`, 0, 35);
+
+    chrome.pageAction.setIcon({
+      imageData: ctx.getImageData(0, 0, 50, 50),
+      tabId: tab.id
+    });
+  };
+  img.src = "icon.png";
+};
