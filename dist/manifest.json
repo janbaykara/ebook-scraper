@@ -1,28 +1,29 @@
-  {
-    "name": "Ebook Scraper",
-    "version": "1.0.0",
-    "description": "Save Ebook pages as a PDF",
-    "manifest_version": 2,
-    "background": {
-        "scripts": ["js/eventPage.js"],
-        "persistent": true
-    },
-    "page_action": {
-        "default_popup": "popup.html",
-        "default_icon": {
-            "16": "icon.png"
-        }
-    },
-    "icons": {
-        "16": "icon.png"
-    },
-    "permissions": [
-        "tabs",
-        "declarativeContent",
-        "storage",
-        "downloads",
-        "webRequest",
-        "*://*.dawsonera.com/",
-        "*://*.proquest.com/"
-    ]
-  }
+{
+  "name": "Ebook Scraper",
+  "version": "1.0.1",
+  "description": "Save Ebook pages as a PDF",
+  "manifest_version": 2,
+  "background": {
+    "scripts": ["js/eventPage.js"],
+    "persistent": true
+  },
+  "page_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png"
+    }
+  },
+  "icons": {
+    "16": "icon.png"
+  },
+  "permissions": [
+    "tabs",
+    "declarativeContent",
+    "storage",
+    "downloads",
+    "webRequest",
+    "*://*.dawsonera.com/",
+    "*://*.proquest.com/",
+    "*://www.jstor.org/"
+  ]
+}

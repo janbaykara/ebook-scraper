@@ -1,6 +1,6 @@
 {
   "name": "ebook-scraper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Save Ebook pages as a PDF",
   "scripts": {
     "build": "./node_modules/.bin/webpack",

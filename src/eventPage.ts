@@ -1,16 +1,20 @@
 import {
-  isPageUrl,
+  extractPageImageURL,
   getBookURL,
   getURL,
   createPDF,
   getBook,
-  move
+  move,
+  getActiveTab
 } from "./common/utils";
 
 const ebookReaderDomains = [
   "dawsonera.com/readonline",
-  "ebookcentral.proquest.com/lib"
+  "ebookcentral.proquest.com/lib",
+  "jstor.org/stable/"
 ];
+
+let lastURL;
 
 chrome.runtime.onInstalled.addListener(() => {
   // Listen to messages sent from other parts of the extension.
@@ -21,6 +25,7 @@ chrome.runtime.onInstalled.addListener(() => {
 
       if (request.action === "ClearBook") {
         isResponseAsync = true;
+        lastURL = null;
         chrome.storage.local.remove(request.bookURL, () => {
           console.log("deleted!");
           sendResponse(null);
@@ -90,6 +95,40 @@ const asyncDownload: MessageResponse<Messages.RequestDownload> = async (
   sendResponse(false);
 };
 
+const savePage = async (pageImageURL: string) => {
+  return new Promise(async resolve => {
+    const bookURL = await getBookURL(await getURL());
+    chrome.storage.local.get(bookURL, (store?: LocalStorageData) => {
+      const book = store[bookURL];
+
+      // Predicates
+      const bookIsValid = !!book && book.pages && Array.isArray(book.pages);
+      if (bookIsValid) {
+        const pageIsAlreadyInTheBook = book.pages.indexOf(pageImageURL) > -1;
+        if (pageIsAlreadyInTheBook) return resolve();
+        // Try to append images to existing books
+        console.info(`Updating book ${book.url} (${book.pages.length})`);
+        book.pages.push(pageImageURL);
+        book.pages = Array.from(new Set(book.pages));
+        chrome.storage.local.set(
+          { [bookURL]: book },
+          () => void resolve() && postBookUpdate(book)
+        );
+      } else {
+        // Or else start a new one init
+        const newBook: Book = { url: bookURL, pages: [pageImageURL] };
+        console.info(
+          `Creating new book ${newBook.url} (${newBook.pages.length})`
+        );
+        chrome.storage.local.set(
+          { [bookURL]: newBook },
+          () => void resolve() && postBookUpdate(book)
+        );
+      }
+    });
+  });
+};
+
 const postBookUpdate = (book: Book) => {
   const message: Messages.BookWasUpdated = { action: "BookWasUpdated", book };
   chrome.runtime.sendMessage(message);
@@ -98,36 +137,18 @@ const postBookUpdate = (book: Book) => {
 const interceptPageResources = async (
   request: chrome.webRequest.WebResponseCacheDetails
 ) => {
-  if (isPageUrl(new URL(request.url))) {
-    const bookURL = await getBookURL(await getURL());
-    chrome.storage.local.get(bookURL, (store?: LocalStorageData) => {
-      const book = store[bookURL];
-      if (book && book.pages && Array.isArray(book.pages)) {
-        console.info(`Updating book ${book.url} (${book.pages.length})`);
-        book.pages.push(request.url);
-        book.pages = Array.from(new Set(book.pages));
-        chrome.storage.local.set({ [bookURL]: book }, () =>
-          postBookUpdate(book)
-        );
-      } else {
-        const newBook: Book = { url: bookURL, pages: [request.url] };
-        console.info(
-          `Creating new book ${newBook.url} (${newBook.pages.length})`
-        );
-        chrome.storage.local.set(
-          {
-            [bookURL]: newBook
-          },
-          () => postBookUpdate(book)
-        );
-      }
-    });
-  }
+  // Prevent event overloading
+  if (lastURL === request.url) return;
+  lastURL = request.url;
+
+  // Attempt to fetch the underlying image URL (e.g. acquire base64 data urls, image urls, etc.)
+  const pageImageURL = await extractPageImageURL(request);
+  if (!pageImageURL) return;
+  return savePage(pageImageURL);
 };
 
 const pageResourceURLFilter: chrome.webRequest.RequestFilter = {
-  urls: ["*://*.dawsonera.com/*", "*://*.proquest.com/*"],
-  types: ["image"]
+  urls: ["*://*.dawsonera.com/*", "*://*.proquest.com/*", "*://*.jstor.org/*"]
 };
 
 // Download ebook page images
