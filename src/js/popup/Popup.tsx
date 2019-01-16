@@ -1,28 +1,17 @@
 import * as React from "react";
-import "./Popup.scss";
-import { Heading, Box, Card, Flex, Text, Button, Image } from "rebass";
+import { useEffect, useState } from "react";
+import { Heading, Box, Card, Flex, Text, Button } from "rebass";
 import { getURL, getBookURL, getBook } from "../common/utils";
+import { Page, ResetButton, Checkbox } from "./Components";
 
-interface AppProps {}
+const Popup: React.SFC = () => {
+  // const [pageNumber, setPageNumber] = useState<number>(undefined);
+  const [displayPages, setDisplayPages] = useState<boolean>(false);
+  const [book, setBook] = useState<Book>(undefined);
 
-interface AppState {
-  pageNumber?: number;
-  book?: Book;
-  displayPages: boolean;
-}
-
-export default class Popup extends React.Component<AppProps, AppState> {
-  state: AppState = {
-    displayPages: false
-  };
-
-  constructor(props: AppProps, state: AppState) {
-    super(props, state);
-  }
-
-  async componentDidMount() {
+  useEffect(() => {
     try {
-      this.fetchBook();
+      fetchBook();
     } catch (e) {
       // No book to begin with
     }
@@ -33,18 +22,18 @@ export default class Popup extends React.Component<AppProps, AppState> {
         let isResponseAsync = false;
 
         if (request.action === "BookWasUpdated") {
-          this.setState({ book: request.book || undefined });
+          setBook(request.book || undefined);
         }
 
         return isResponseAsync;
       }
     );
-  }
+  }, []);
 
-  toggleDisplayPages = (displayPages = !this.state.displayPages) =>
-    this.setState({ displayPages });
+  const toggleDisplayPages = (_displayPages = !displayPages) =>
+    setDisplayPages(_displayPages);
 
-  fetchBook = (): Promise<Book> => {
+  const fetchBook = (): Promise<Book> => {
     console.log("fetching book");
     return new Promise(async (resolve, reject) => {
       try {
@@ -67,7 +56,7 @@ export default class Popup extends React.Component<AppProps, AppState> {
           console.log("Received book", book);
         }
 
-        this.setState({ book }, () => console.log("new book", book));
+        setBook(book);
 
         resolve(book);
       } catch (e) {
@@ -76,68 +65,55 @@ export default class Popup extends React.Component<AppProps, AppState> {
     });
   };
 
-  download = async () => {
-    if (!this.state.book.url) return;
+  const download = async () => {
+    if (!book.url) return;
     const message: Messages.RequestDownload = {
       action: "RequestDownload",
-      bookURL: this.state.book.url
+      bookURL: book.url
     };
     return await chrome.runtime.sendMessage(message);
   };
 
-  reset = async () => {
-    if (!this.state.book.url) return;
+  const reset = async () => {
+    if (!book.url) return;
     const message: Messages.ClearBook = {
       action: "ClearBook",
-      bookURL: this.state.book.url
+      bookURL: book.url
     };
-    return await chrome.runtime.sendMessage(message, this.fetchBook);
+    return await chrome.runtime.sendMessage(message, fetchBook);
   };
 
-  updatePageOrder = async (oldIndex: number, newIndex: number) => {
-    if (!this.state.book.url) return;
+  const updatePageOrder = async (oldIndex: number, newIndex: number) => {
+    if (!book.url) return;
     const message: Messages.UpdatePageOrder = {
       action: "UpdatePageOrder",
-      bookURL: this.state.book.url,
+      bookURL: book.url,
       oldIndex,
       newIndex
     };
-    return await chrome.runtime.sendMessage(message, this.fetchBook);
+    return await chrome.runtime.sendMessage(message, fetchBook);
   };
 
-  render() {
-    return (
-      <Box width={250}>
+  return (
+    <Box width={250}>
+      <Box>
         <Flex justifyContent="between" alignItems="center">
           <Box width={1}>
             <Heading fontSize={2}>Ebook PDF creator 📖</Heading>
           </Box>
-          {this.state.book && (
-            <Button
-              onClick={this.reset}
-              css={{
-                "text-align": "right",
-                background: "#FAFAFA",
-                border: "1px solid red"
-              }}
-              color="red"
-              p={1}
-            >
-              reset
-            </Button>
-          )}
+          {book && <ResetButton reset={reset}>Reset</ResetButton>}
         </Flex>
-        {this.state.book && (
+        {book && (
           <>
             <Card bg="#EEE" borderRadius={3} my={2}>
               <Text fontSize={1}>
                 <b>Book URL:</b> <br />
-                <a href={this.state.book.url}>{this.state.book.url}</a>
+                <a href={book.url}>{book.url}</a>
               </Text>
             </Card>
-            {this.state.book.pages.length > 0 ? (
-              <Button onClick={this.download} css={{ width: "100%" }}>
-                💾 Download PDF ({this.state.book.pages.length} pages)
+            {book.pages.length > 0 ? (
+              <Button onClick={download} css={{ width: "100%" }}>
+                💾 Download PDF ({book.pages.length} pages)
               </Button>
             ) : (
               <Button disabled>
@@ -146,48 +122,28 @@ export default class Popup extends React.Component<AppProps, AppState> {
             )}
           </>
         )}
-        {this.state.book &&
-          this.state.book.pages &&
-          this.state.book.pages.length > 0 && (
-            <Box my={1}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={this.state.displayPages}
-                  onChange={() => this.toggleDisplayPages()}
-                />
-                Show pages
-              </label>
-            </Box>
-          )}
-        {this.state.displayPages &&
-          this.state.book &&
-          this.state.book.pages.map((url, i, arr) => (
-            <Flex key={url} alignItems="center">
-              <Box>
-                <Image src={url} my={1} width={0.95} height="100px" />
-              </Box>
-              <Flex flexDirection="column" justifyContent="around" width={0.05}>
-                {i > 0 && (
-                  <Text
-                    css={{ cursor: "pointer" }}
-                    onClick={() => this.updatePageOrder(i, i - 1)}
-                  >
-                    ⬆️
-                  </Text>
-                )}
-                {i + 1 < arr.length && (
-                  <Text
-                    css={{ cursor: "pointer" }}
-                    onClick={() => this.updatePageOrder(i, i + 1)}
-                  >
-                    ⬇️
-                  </Text>
-                )}
-              </Flex>
-            </Flex>
-          ))}
+        {book && book.pages && book.pages.length > 0 && (
+          <Checkbox
+            checked={displayPages}
+            onChange={() => toggleDisplayPages()}
+          >
+            Show pages
+          </Checkbox>
+        )}
       </Box>
-    );
-  }
-}
+      {displayPages &&
+        book &&
+        book.pages.map((url, i, arr) => (
+          <Page
+            url={url}
+            moveUp={i > 0 ? () => updatePageOrder(i, i - 1) : undefined}
+            moveDown={
+              i + 1 < arr.length ? () => updatePageOrder(i, i + 1) : undefined
+            }
+          />
+        ))}
+    </Box>
+  );
+};
+
+export default Popup;
