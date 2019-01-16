@@ -20,6 +20,7 @@
     "tabs",
     "declarativeContent",
     "storage",
+    "unlimitedStorage",
     "downloads",
     "webRequest",
     "*://*.dawsonera.com/",
