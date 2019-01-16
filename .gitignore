@@ -1,5 +1,6 @@
 dist/js
+dist/manifest\.js
+dist/manifest\.json
 node_modules
 yarn-error\.log
-
 *.log

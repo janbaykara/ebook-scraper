@@ -4,9 +4,7 @@
   "description": "Save Ebook pages as a PDF",
   "manifest_version": 2,
   "background": {
-    "scripts": [
-      "js/eventPage.js"
-    ],
+    "scripts": ["js/eventPage.js"],
     "persistent": true
   },
   "page_action": {
@@ -24,9 +22,6 @@
     "storage",
     "unlimitedStorage",
     "downloads",
-    "webRequest",
-    "*://*.proquest.com/",
-    "*://*.dawsonera.com/",
-    "*://www.jstor.org/"
+    "webRequest"
   ]
 }
