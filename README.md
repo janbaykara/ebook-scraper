@@ -1,5 +1,7 @@
 # Ebook Scraper
 
+### [**Can you help maintain this repository? Let us know! 🌈🛠💬**](https://github.com/janbaykara/ebook-scraper/discussions/12)
+
 ![Screenshot](https://i.imgur.com/3zeuWBe.png)
 
 - Compile PDFs while reading ebooks
