@@ -26,7 +26,7 @@ export const updatePageAction = async () => {
     ctx.fillStyle = "blue";
     ctx.fillText(`${book.pages.length}`, 0, 35);
 
-    chrome.pageAction.setIcon({
+    chrome.action.setIcon({
       imageData: ctx.getImageData(0, 0, 50, 50),
       tabId: tab.id
     });
