@@ -2,7 +2,7 @@ import sites from "./sites";
 
 export function getActiveTab(): Promise<false | chrome.tabs.Tab> {
   return new Promise(resolve => {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       if (!tabs.length) return resolve(false);
       return resolve(tabs[0]);
     });

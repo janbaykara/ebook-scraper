@@ -57,9 +57,7 @@ chrome.runtime.onInstalled.addListener(() => {
           ...sites.map(
             site =>
               new chrome.declarativeContent.PageStateMatcher({
-                pageUrl: {
-                  urlContains: site.readerDomain
-                }
+                pageUrl: site.readerDomain
               })
           )
         ],
@@ -80,6 +78,7 @@ chrome.webRequest.onCompleted.addListener(
 
     // Attempt to fetch the underlying image URL (e.g. acquire base64 data urls, image urls, etc.)
     const pageImageURL = await extractPageImageURL(request);
+    console.log(pageImageURL)
     if (!pageImageURL) return;
     try {
       return savePage(pageImageURL);
