@@ -9,7 +9,7 @@
   "author": "Joe Martella",
   "license": "MIT",
   "devDependencies": {
-    "@types/chrome": "0.0.74",
+    "@types/chrome": "*",
     "@types/react": "^16.7.20",
     "@types/react-dom": "^16.0.11",
     "@types/webpack": "4",

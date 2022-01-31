@@ -4,10 +4,7 @@
   "description": "Save Ebook pages as a PDF",
   "manifest_version": 3,
   "background": {
-    "scripts": [
-      "js/eventPage.js"
-    ],
-    "persistent": true
+    "service_worker": "js/eventPage.js"
   },
   "action": {
     "default_popup": "popup.html",
@@ -25,5 +22,6 @@
     "unlimitedStorage",
     "downloads",
     "webRequest"
-  ]
+  ],
+  "host_permissions": []
 }

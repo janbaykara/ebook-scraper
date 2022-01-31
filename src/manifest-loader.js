@@ -9,7 +9,7 @@ module.exports = function(manifest) {
   // Add site-specific permissions to the extension
   const siteURLs = sites.map(site => site.chromeURLScope);
   const nextManifest = Object.assign({}, manifest, {
-    permissions: manifest.permissions.concat(siteURLs)
+    host_permissions: siteURLs
   });
 
   /// ---

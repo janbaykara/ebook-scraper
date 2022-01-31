@@ -1,15 +1,12 @@
 {
   "name": "Ebook Scraper",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Save Ebook pages as a PDF",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "background": {
-    "scripts": [
-      "js/eventPage.js"
-    ],
-    "persistent": true
+    "service_worker": "js/eventPage.js"
   },
-  "page_action": {
+  "action": {
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icon.png"
@@ -24,7 +21,9 @@
     "storage",
     "unlimitedStorage",
     "downloads",
-    "webRequest",
+    "webRequest"
+  ],
+  "host_permissions": [
     "*://*.proquest.com/",
     "*://*.dawsonera.com/",
     "*://www.jstor.org/"
