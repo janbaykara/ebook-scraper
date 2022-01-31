@@ -4,7 +4,6 @@ import {
   updatePageAction,
   deleteBook,
   saveBook,
-  asyncDownload,
   asyncUpdatePageOrder,
   savePage
 } from "./actions";
@@ -40,11 +39,6 @@ chrome.runtime.onInstalled.addListener(() => {
         asyncUpdatePageOrder(request, sendResponse);
       }
 
-      if (request.action === "RequestDownload") {
-        isResponseAsync = true;
-        asyncDownload(request, sendResponse);
-      }
-
       return isResponseAsync;
     }
   );
@@ -57,13 +51,11 @@ chrome.runtime.onInstalled.addListener(() => {
           ...sites.map(
             site =>
               new chrome.declarativeContent.PageStateMatcher({
-                pageUrl: {
-                  urlContains: site.readerDomain
-                }
+                pageUrl: site.readerDomain
               })
           )
         ],
-        actions: [new chrome.declarativeContent.ShowPageAction()]
+        actions: [new chrome.declarativeContent.ShowAction()]
       }
     ]);
   });
@@ -74,10 +66,13 @@ chrome.webRequest.onCompleted.addListener(
   async function interceptPageResources(request) {
     // Prevent event overloading
     if (lastURL === request.url) return;
+    // Ignore requests made by the extension
+    if (request.initiator.includes("chrome-extension://")) return;
     lastURL = request.url;
 
     // Attempt to fetch the underlying image URL (e.g. acquire base64 data urls, image urls, etc.)
     const pageImageURL = await extractPageImageURL(request);
+    console.log(pageImageURL)
     if (!pageImageURL) return;
     try {
       return savePage(pageImageURL);

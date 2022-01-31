@@ -37,16 +37,13 @@ const webpackConfig: webpack.Configuration = {
       },
       {
         exclude: /node_modules/,
-        test: /\.scss$/,
+        test: /\.css$/,
         use: [
           {
             loader: "style-loader" // Creates style nodes from JS strings
           },
           {
             loader: "css-loader" // Translates CSS into CommonJS
-          },
-          {
-            loader: "sass-loader" // Compiles Sass to CSS
           }
         ]
       }

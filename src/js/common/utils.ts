@@ -1,9 +1,8 @@
-import * as jsPDF from "jspdf";
 import sites from "./sites";
 
 export function getActiveTab(): Promise<false | chrome.tabs.Tab> {
   return new Promise(resolve => {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
       if (!tabs.length) return resolve(false);
       return resolve(tabs[0]);
     });
@@ -51,66 +50,6 @@ export const getBook = (url: string): Promise<Book | null> =>
       return resolve(null);
     });
   });
-
-export function createPDF(book: Book): Promise<jsPDF> {
-  return new Promise(async (resolve, reject) => {
-    try {
-      if (!book.pages) {
-        reject("Book has no pages to construct a PDF from");
-      }
-
-      // create a document and pipe to a blob
-      let images: {
-        [key: string]: { image: HTMLImageElement; blobURI: string };
-      } = {};
-
-      const fetchedImages = await Promise.all(
-        book.pages.map(async (url, i) => {
-          return new Promise(async (resolve, reject) => {
-            const blobURI = await fetchAsBlob(url);
-            var image = new Image();
-            image.onload = () => {
-              images[url] = { image, blobURI };
-              if (blobURI) {
-                resolve(true);
-              } else {
-                reject("Couldn't fetch image for page URL");
-              }
-            };
-            image.src = blobURI;
-          });
-        })
-      );
-
-      if (!fetchedImages) {
-        reject("Couldn't fetch images for all pages");
-      }
-
-      // Define the dimensions of the doc
-      const templatePage = Object.values(images)[0];
-      var doc = new jsPDF({
-        unit: "px",
-        format: [templatePage.image.width, templatePage.image.height]
-      });
-
-      const width = (doc.internal.pageSize as any).getWidth();
-      const height = (doc.internal.pageSize as any).getHeight();
-
-      book.pages.forEach((url, i, arr) => {
-        const { blobURI } = images[url];
-        doc.addImage(blobURI, 0, 0, width, height);
-        if (arr.length > i + 1) {
-          doc.addPage();
-        }
-      });
-
-      doc.save(`book-section-${book.url}.pdf`);
-      resolve(doc);
-    } catch (e) {
-      return reject(e);
-    }
-  });
-}
 
 export function fetchAsBlob(path: string): Promise<string> {
   return new Promise(resolve => {

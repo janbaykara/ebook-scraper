@@ -12,7 +12,7 @@ interface SiteConfig {
   /**
    * Root path to the reader app
    */
-  readerDomain: string;
+  readerDomain: chrome.declarativeContent.PageStateUrlDetails;
   /**
    * A canonical ID for a book,
    * (should point to the user-viewable resource)
@@ -39,11 +39,33 @@ interface SiteConfig {
 }
 
 const sites: SiteConfig[] = [
+  // E.g. https://www.proquest.com/docview/2132069905/bookReader?accountid=16710
   {
+    name: "ProQuest",
+    chromeURLScope: "*://*.proquest.com/",
+    host: "www.proquest.com",
+    readerDomain: {
+      urlMatches: "proquest\.com/docview/.+/bookReader"
+    },
+    pageResourceURLFilter: "*://*.proquest.com/*",
+    constructBookURL: url => `${url.host}${url.pathname}`,
+    testPageImageURL: (request, url) =>
+      request.type === "image" && url.host === "proquest.com",
+    getPageImageURL: url =>
+      Promise.resolve(
+        url.pathname.includes("docImage.action") ? url.toString() : null
+      )
+  },
+  {
+    /**
+     * Seems to be deprecated as a front-end URL
+     */
     name: "ProQuest Ebook Central",
     chromeURLScope: "*://*.proquest.com/",
     host: "ebookcentral.proquest.com",
-    readerDomain: "ebookcentral.proquest.com/lib",
+    readerDomain: {
+      urlContains: "ebookcentral.proquest.com/lib"
+    },
     pageResourceURLFilter: "*://*.proquest.com/*",
     constructBookURL: url =>
       `${url.host}${url.pathname}?docID=${url.searchParams.get("docID")}`,
@@ -54,11 +76,17 @@ const sites: SiteConfig[] = [
         url.pathname.includes("docImage.action") ? url.toString() : null
       )
   },
+  /**
+   * Company went bankrupt in 2020, all books moved to ProQuest
+   * https://www.ulster.ac.uk/library/updates/resources/dawsonera-e-books-service-closed
+   */
   {
     name: "Dawsonera",
     chromeURLScope: "*://*.dawsonera.com/",
     host: "www.dawsonera.com",
-    readerDomain: "dawsonera.com/readonline",
+    readerDomain: {
+      urlContains: "dawsonera.com/readonline"
+    },
     pageResourceURLFilter: "*://*.dawsonera.com/*",
     constructBookURL: url => `${url.host}${url.pathname}`,
     testPageImageURL: (request, url) =>
@@ -74,25 +102,25 @@ const sites: SiteConfig[] = [
     name: "JStor",
     chromeURLScope: "*://www.jstor.org/",
     host: "www.jstor.org",
-    readerDomain: "jstor.org/stable/",
+    readerDomain: {
+      urlContains: "jstor.org/stable/"
+    },
     pageResourceURLFilter: "*://*.jstor.org/*",
     // e.g. https://www.jstor.org/stable/41857568?read-now=1&seq=1#metadata_info_tab_contents
     constructBookURL: url => `${url.host}${url.pathname}`,
-    // e.g. https://www.jstor.org/stable/get_image/41857568?path=czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvNDhiMDU4ZTYvMWY4MC8zY2NlLzlmNzEvZjcxMGNiMWQ2MWYyL2k0MDA4Nzg0MC80MTg1NzU2OC9pbWFnZXMvcGFnZXMvZHRjLjExLnRpZi5naWY
     testPageImageURL: (request, url) =>
-      request.type === "xmlhttprequest" &&
-      url.host === "www.jstor.org" &&
-      url.pathname.includes("get_image") &&
-      url.searchParams.has("path"),
-    getPageImageURL: url =>
-      new Promise(async (resolve, reject) => {
-        try {
-          const res = await fetch(url.toString());
-          return resolve(await res.text());
-        } catch (e) {
-          reject(e);
-        }
-      })
+      ["image", "xmlhttprequest"].includes(request.type) &&
+      url.host === "www.jstor.org" && (
+        (
+          // e.g. https://www.jstor.org/stable/get_image/41857568?path=czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvNDhiMDU4ZTYvMWY4MC8zY2NlLzlmNzEvZjcxMGNiMWQ2MWYyL2k0MDA4Nzg0MC80MTg1NzU2OC9pbWFnZXMvcGFnZXMvZHRjLjExLnRpZi5naWY
+          url.pathname.includes("get_image") &&
+          url.searchParams.has("path")
+        ) || (
+          // e.g. https://www.jstor.org/page-scan-delivery/get-page-scan/41857568/2"
+          url.pathname.includes('page-scan')
+        )
+      ),
+    getPageImageURL: url => Promise.resolve(url.toString())
   }
 ];
 
