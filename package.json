@@ -14,8 +14,6 @@
     "@types/react-dom": "^16.0.11",
     "@types/webpack": "4",
     "css-loader": "^0.28.11",
-    "node-sass": "^4.9.4",
-    "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "ts-loader": "^5.2.2",
     "ts-node": "^7.0.1",
