@@ -1,5 +1,6 @@
-import { fetchAsBlob } from '../common/utils';
+import { fetchAsBlob, getActiveTab } from '../common/utils';
 import { jsPDF } from 'jspdf';
+import { sha1 } from 'object-hash'
 
 export function createPDF(book: Book): Promise<jsPDF> {
   return new Promise(async (resolve, reject) => {
@@ -53,7 +54,10 @@ export function createPDF(book: Book): Promise<jsPDF> {
         }
       });
 
-      doc.save(`book-section-${book.url}.pdf`);
+      let bookHash = sha1(book)
+      const activeTab = await getActiveTab()
+      const title = `${activeTab ? activeTab.title : book.url} (${book.pages.length} pages) (${bookHash}).pdf`
+      doc.save(title);
 
       resolve(doc);
     } catch (e) {
