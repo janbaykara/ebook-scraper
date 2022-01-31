@@ -15,23 +15,23 @@ export const updatePageAction = async () => {
   const book = await getBook(bookURL);
   if (!book || !tab) return;
 
-  var canvas = document.createElement("canvas");
-  var img = document.createElement("img");
+  const SIZE = 50 
+  // https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas
+  // @ts-ignore
+  var canvas = new OffscreenCanvas(SIZE, SIZE) as HTMLCanvasElement;
+  var ctx = canvas.getContext("2d");
 
-  img.onload = function() {
-    var ctx = canvas.getContext("2d");
+  /* Page count */
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, SIZE, SIZE);
+  ctx.font = "bold 30px Arial";
+  ctx.fillStyle = "blue";
+  ctx.fillText(`${book.pages.length}`, 0, 35);
 
-    /* Page count */
-    ctx.font = "bold 30px Arial";
-    ctx.fillStyle = "blue";
-    ctx.fillText(`${book.pages.length}`, 0, 35);
-
-    chrome.action.setIcon({
-      imageData: ctx.getImageData(0, 0, 50, 50),
-      tabId: tab.id
-    });
-  };
-  img.src = "icon.png";
+  chrome.action.setIcon({
+    imageData: ctx.getImageData(0, 0, SIZE, SIZE),
+    tabId: tab.id
+  });
 };
 
 export const asyncUpdatePageOrder: MessageResponse<
