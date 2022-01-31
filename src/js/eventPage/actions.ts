@@ -58,8 +58,15 @@ export const asyncDownload: MessageResponse<Messages.RequestDownload> = async (
 export const savePage = (pageImageURL: string): Promise<boolean> => {
   return new Promise(async (resolve, reject) => {
     const url = await getURL();
-    if (!url) return reject();
+    if (!url) {
+      console.error({ url })
+      return reject("Could not get active tab URL")
+    };
     const bookURL = await getBookURL(url);
+    if (!bookURL) {
+      console.error({ url, bookURL })
+      return reject("Could not get book URL")
+    };
     const book = await getBook(bookURL);
     const bookIsValid = !!book && book.pages && Array.isArray(book.pages);
     if (bookIsValid) {
@@ -73,7 +80,7 @@ export const savePage = (pageImageURL: string): Promise<boolean> => {
     } else {
       // Or else start a new one init
       const newBook: Book = { url: bookURL, pages: [pageImageURL] };
-      console.info(`Creating new book`);
+      console.info(`Creating new book`, newBook);
       saveBook(newBook, () => resolve(true));
     }
   });
