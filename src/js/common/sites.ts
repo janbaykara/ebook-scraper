@@ -90,15 +90,7 @@ const sites: SiteConfig[] = [
           url.pathname.includes('page-scan')
         )
       ),
-    getPageImageURL: url =>
-      new Promise(async (resolve, reject) => {
-        try {
-          const res = await fetch(url.toString());
-          return resolve(await res.text());
-        } catch (e) {
-          reject(e);
-        }
-      })
+    getPageImageURL: url => Promise.resolve(url.toString())
   }
 ];
 
