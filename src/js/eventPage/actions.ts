@@ -1,7 +1,6 @@
 import {
   getBookURL,
   getURL,
-  createPDF,
   getBook,
   move,
   getActiveTab
@@ -41,18 +40,6 @@ export const asyncUpdatePageOrder: MessageResponse<
   if (!book) return Promise.reject(false);
   book.pages = move(book.pages, oldIndex, newIndex, numPages);
   saveBook(book, () => sendResponse(book));
-};
-
-export const asyncDownload: MessageResponse<Messages.RequestDownload> = async (
-  { bookURL },
-  sendResponse
-) => {
-  const book = await getBook(bookURL);
-  if (book) {
-    createPDF(book);
-    sendResponse(book);
-  }
-  sendResponse(false);
 };
 
 export const savePage = (pageImageURL: string): Promise<boolean> => {

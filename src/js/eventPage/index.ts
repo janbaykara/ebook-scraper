@@ -4,7 +4,6 @@ import {
   updatePageAction,
   deleteBook,
   saveBook,
-  asyncDownload,
   asyncUpdatePageOrder,
   savePage
 } from "./actions";
@@ -38,11 +37,6 @@ chrome.runtime.onInstalled.addListener(() => {
       if (request.action === "UpdatePageOrder") {
         isResponseAsync = true;
         asyncUpdatePageOrder(request, sendResponse);
-      }
-
-      if (request.action === "RequestDownload") {
-        isResponseAsync = true;
-        asyncDownload(request, sendResponse);
       }
 
       return isResponseAsync;

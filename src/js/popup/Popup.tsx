@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Heading, Box, Card, Flex, Text, Button } from "rebass";
 import { getURL, getBookURL, getBook } from "../common/utils";
 import { Page, ResetButton, Checkbox } from "./Components";
+import { createPDF } from './pdf';
 
 const Popup: React.SFC = () => {
   // const [pageNumber, setPageNumber] = useState<number>(undefined);
@@ -67,11 +68,7 @@ const Popup: React.SFC = () => {
 
   const download = async () => {
     if (!book.url) return;
-    const message: Messages.RequestDownload = {
-      action: "RequestDownload",
-      bookURL: book.url
-    };
-    return await chrome.runtime.sendMessage(message);
+    createPDF(book);
   };
 
   const reset = async () => {

@@ -6,10 +6,6 @@ interface Book {
 }
 
 declare namespace Messages {
-  interface RequestDownload {
-    action: "RequestDownload";
-    bookURL: string;
-  }
   interface SaveBook {
     action: "SaveBook";
     book: Book;
@@ -33,7 +29,6 @@ declare namespace Messages {
 
 type ScraperMessage =
   | Messages.SaveBook
-  | Messages.RequestDownload
   | Messages.BookWasUpdated
   | Messages.ClearBook
   | Messages.UpdatePageOrder;
