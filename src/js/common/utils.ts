@@ -1,4 +1,3 @@
-import * as jsPDF from "jspdf";
 import sites from "./sites";
 
 export function getActiveTab(): Promise<false | chrome.tabs.Tab> {
