@@ -6,7 +6,7 @@
     "build": "webpack",
     "watch": "webpack -w"
   },
-  "author": "Joe Martella",
+  "author": "Jan Baykara",
   "license": "MIT",
   "devDependencies": {
     "@types/chrome": "*",
