@@ -59,6 +59,8 @@ chrome.runtime.onInstalled.addListener(() => {
       }
     ]);
   });
+
+  chrome.action.setBadgeBackgroundColor({ color: "#3c3a85" });
 });
 
 // Download ebook page images
