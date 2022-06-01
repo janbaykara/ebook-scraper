@@ -9,11 +9,14 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icon.png"
+      "512": "icon-512.png"
     }
   },
   "icons": {
-    "16": "icon.png"
+    "512": "icon-512.png",
+    "128": "icon-128.png",
+    "48": "icon-48.png",
+    "16": "icon-16.png"
   },
   "permissions": [
     "tabs",

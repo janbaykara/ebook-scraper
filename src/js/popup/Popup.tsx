@@ -109,7 +109,7 @@ const Popup: React.SFC = () => {
               </Text>
             </Card>
             {book.pages.length > 0 ? (
-              <Button onClick={download} css={{ width: "100%" }}>
+              <Button bg="#f45752" onClick={download} css={{ width: "100%" }}>
                 💾 Download PDF ({book.pages.length} pages)
               </Button>
             ) : (
