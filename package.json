@@ -3,8 +3,8 @@
   "version": "1.0.1",
   "description": "Save Ebook pages as a PDF",
   "scripts": {
-    "build": "./node_modules/.bin/webpack",
-    "watch": "./node_modules/.bin/webpack -w"
+    "build": "webpack",
+    "watch": "webpack -w"
   },
   "author": "Joe Martella",
   "license": "MIT",
