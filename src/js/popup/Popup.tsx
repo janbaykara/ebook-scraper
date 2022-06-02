@@ -5,7 +5,7 @@ import { getURL, getBookURL, getBook } from "../common/utils";
 import { Page, ResetButton, Checkbox } from "./Components";
 import { createPDF } from './pdf';
 
-const Popup: React.SFC = () => {
+function Popup() {
   // const [pageNumber, setPageNumber] = useState<number>(undefined);
   const [displayPages, setDisplayPages] = useState<boolean>(false);
   const [book, setBook] = useState<Book>(undefined);
