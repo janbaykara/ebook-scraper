@@ -31,14 +31,15 @@ function Page({ url, moveUp, moveDown }: PageParams) {
 
 interface ResetButtonParams {
   reset: any,
+  styleOverride: any,
   children: any
 }
 
-function ResetButton({ reset, children }: ResetButtonParams) {
+function ResetButton({ reset, styleOverride, children }: ResetButtonParams) {
   return (
     <Button
       onClick={reset}
-      css={{
+      css={styleOverride ? styleOverride : {
         "text-align": "right",
         background: "#FAFAFA",
         border: "1px solid red"
