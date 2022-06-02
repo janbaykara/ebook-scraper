@@ -103,6 +103,12 @@ const Popup: React.SFC = () => {
     color: "#fff",
   }
 
+  const variableDarkModeReset = {
+    "text-align": "right",
+    backgroundColor: "#242424",
+    border: "1px solid red"
+  }
+
   return (
     <Box width={250} style={darkMode ? variableDarkModeContainer : null}>
       <Box>
@@ -110,14 +116,14 @@ const Popup: React.SFC = () => {
           <Box width={1}>
             <Heading fontSize={2}>eBook PDF Creator 📖</Heading>
           </Box>
-          {book && <ResetButton reset={reset}>Reset</ResetButton>}
+          {book && <ResetButton reset={reset} styleOverride={darkMode ? variableDarkModeReset : null}>Reset</ResetButton>}
         </Flex>
         {book && (
           <>
             <Card bg="#EEE" borderRadius={3} my={2} style={darkMode ? variableDarkModeBox : null}>
               <Text fontSize={1}>
                 <b>Book URL:</b> <br />
-                <a href={book.url}>{book.url}</a>
+                <a style={{ "color": "#f45752" }} href={book.url}>{book.url}</a>
               </Text>
             </Card>
             {book.pages.length > 0 ? (

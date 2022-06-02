@@ -25,10 +25,10 @@ export const Page: React.SFC<{
   </Flex>
 );
 
-export const ResetButton: React.SFC<{ reset: any }> = ({ reset, children }) => (
+export const ResetButton: React.SFC<{ reset: any, styleOverride?: any }> = ({ reset, styleOverride, children }) => (
   <Button
     onClick={reset}
-    css={{
+    css={styleOverride ? styleOverride : {
       "text-align": "right",
       background: "#FAFAFA",
       border: "1px solid red"
