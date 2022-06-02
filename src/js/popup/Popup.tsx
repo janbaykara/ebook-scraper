@@ -91,8 +91,20 @@ const Popup: React.SFC = () => {
     return await chrome.runtime.sendMessage(message, fetchBook);
   };
 
+  // Determine dark mode and define colors for it
+  const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  const variableDarkModeContainer = { // we don't have to worry about the bg color here as it is managed by / inherited from the variableDarkModeRoot css
+    color: "#fff"
+  }
+
+  const variableDarkModeBox = {
+    backgroundColor: "#555",
+    color: "#fff",
+  }
+
   return (
-    <Box width={250}>
+    <Box width={250} style={darkMode ? variableDarkModeContainer : null}>
       <Box>
         <Flex justifyContent="between" alignItems="center">
           <Box width={1}>
@@ -102,7 +114,7 @@ const Popup: React.SFC = () => {
         </Flex>
         {book && (
           <>
-            <Card bg="#EEE" borderRadius={3} my={2}>
+            <Card bg="#EEE" borderRadius={3} my={2} style={darkMode ? variableDarkModeBox : null}>
               <Text fontSize={1}>
                 <b>Book URL:</b> <br />
                 <a href={book.url}>{book.url}</a>
