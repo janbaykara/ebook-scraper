@@ -91,29 +91,47 @@ function Popup() {
     return await chrome.runtime.sendMessage(message, fetchBook);
   };
 
+  // Determine dark mode and define colors for it
+  const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  const variableDarkModeContainer = { // we don't have to worry about the bg color here as it is managed by / inherited from the variableDarkModeRoot css
+    color: "#fff"
+  }
+
+  const variableDarkModeBox = {
+    backgroundColor: "#555",
+    color: "#fff",
+  }
+
+  const variableDarkModeReset = {
+    "text-align": "right",
+    backgroundColor: "#242424",
+    border: "1px solid red"
+  }
+
   return (
-    <Box width={250}>
+    <Box width={250} style={darkMode ? variableDarkModeContainer : null}>
       <Box>
         <Flex justifyContent="between" alignItems="center">
           <Box width={1}>
-            <Heading fontSize={2}>Ebook PDF creator 📖</Heading>
+            <Heading fontSize={2}>eBook PDF Creator 📖</Heading>
           </Box>
-          {book && <ResetButton reset={reset}>Reset</ResetButton>}
+          {book && <ResetButton reset={reset} styleOverride={darkMode ? variableDarkModeReset : null}>Reset</ResetButton>}
         </Flex>
         {book && (
           <>
-            <Card bg="#EEE" borderRadius={3} my={2}>
+            <Card bg="#EEE" borderRadius={3} my={2} style={darkMode ? variableDarkModeBox : null}>
               <Text fontSize={1}>
                 <b>Book URL:</b> <br />
-                <a href={book.url}>{book.url}</a>
+                <a style={{ "color": "#f45752" }} href={book.url}>{book.url}</a>
               </Text>
             </Card>
             {book.pages.length > 0 ? (
-              <Button onClick={download} css={{ width: "100%" }}>
+              <Button bg="#f45752" onClick={download} css={{ width: "100%" }}>
                 💾 Download PDF ({book.pages.length} pages)
               </Button>
             ) : (
-              <Button disabled>
+              <Button bg="#f45752" disabled>
                 Pages will be collected as you navigate through the book
               </Button>
             )}

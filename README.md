@@ -1,4 +1,4 @@
-# Ebook Scraper
+# eBook Scraper
 
 ### [**Can you help maintain this repository? Let us know! 🌈🛠💬**](https://github.com/janbaykara/ebook-scraper/discussions/12)
 
