@@ -59,6 +59,8 @@ chrome.runtime.onInstalled.addListener(() => {
       }
     ]);
   });
+
+  chrome.action.setBadgeBackgroundColor({ color: "#3c3a85" });
 });
 
 // Download ebook page images
@@ -84,3 +86,11 @@ chrome.webRequest.onCompleted.addListener(
     urls: sites.map(site => site.pageResourceURLFilter)
   }
 );
+
+// Update when the page loads to show current page count
+chrome.tabs.onUpdated.addListener(async function(tabId, changeInfo, tab) {
+  if (changeInfo.status === "complete") {
+    updatePageAction();
+    chrome.action.setBadgeBackgroundColor({ color: "#3c3a85" });
+  }
+});
