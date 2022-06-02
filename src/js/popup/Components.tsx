@@ -2,9 +2,9 @@ import * as React from "react";
 import { Flex, Box, Image, Text, Button } from "rebass";
 
 interface PageParams {
-  url: any,
-  moveUp: any,
-  moveDown: any
+  url: string,
+  moveUp: Function,
+  moveDown: Function
 }
 
 function Page({ url, moveUp, moveDown }: PageParams) {
@@ -30,9 +30,9 @@ function Page({ url, moveUp, moveDown }: PageParams) {
 };
 
 interface ResetButtonParams {
-  reset: any,
-  styleOverride: any,
-  children: any
+  reset: Function,
+  styleOverride: Object,
+  children: React.ReactNode
 }
 
 function ResetButton({ reset, styleOverride, children }: ResetButtonParams) {
@@ -54,8 +54,8 @@ function ResetButton({ reset, styleOverride, children }: ResetButtonParams) {
 
 interface CheckboxParams {
   checked: boolean,
-  onChange: any,
-  children: any
+  onChange: React.ChangeEventHandler<HTMLInputElement>,
+  children: React.ReactNode
 }
 
 function Checkbox({ checked, onChange, children }: CheckboxParams) {
