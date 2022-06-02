@@ -14,8 +14,6 @@ export const updatePageAction = async () => {
   const book = await getBook(bookURL);
   if (!book || !tab) return;
 
-  chrome.action.setBadgeBackgroundColor({ color: "#f45752" });
-
   if (book.pages.length > 999) {
     chrome.action.setBadgeText({ text: "999+", tabId: tab.id })
   } else {
