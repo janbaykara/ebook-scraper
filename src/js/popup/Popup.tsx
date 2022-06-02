@@ -96,7 +96,7 @@ const Popup: React.SFC = () => {
       <Box>
         <Flex justifyContent="between" alignItems="center">
           <Box width={1}>
-            <Heading fontSize={2}>eBook PDF creator 📖</Heading>
+            <Heading fontSize={2}>eBook PDF Creator 📖</Heading>
           </Box>
           {book && <ResetButton reset={reset}>Reset</ResetButton>}
         </Flex>
