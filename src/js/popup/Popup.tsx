@@ -151,6 +151,7 @@ const Popup: React.SFC = () => {
         book.pages.map((url, i, arr) => (
           <Page
             url={url}
+            key={url}
             moveUp={i > 0 ? () => updatePageOrder(i, i - 1) : undefined}
             moveDown={
               i + 1 < arr.length ? () => updatePageOrder(i, i + 1) : undefined
