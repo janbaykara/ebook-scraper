@@ -113,7 +113,7 @@ const Popup: React.SFC = () => {
                 💾 Download PDF ({book.pages.length} pages)
               </Button>
             ) : (
-              <Button disabled>
+              <Button bg="#f45752" disabled>
                 Pages will be collected as you navigate through the book
               </Button>
             )}
