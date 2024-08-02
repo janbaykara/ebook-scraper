@@ -14,12 +14,12 @@ function Popup() {
     try {
       fetchBook();
     } catch (e) {
-      // No book to begin with
+      console.log("Error fetching book initially", e);
     }
 
     chrome.runtime.onMessage.addListener(
       (request: ScraperMessage, sender, sendResponse) => {
-        // onMessage must return "true" if response is async.
+        console.log("Received message", request);
         let isResponseAsync = false;
 
         if (request.action === "BookWasUpdated") {
@@ -52,15 +52,21 @@ function Popup() {
           console.log("No book", book);
           book = { url, pages: [] };
           const message: Messages.SaveBook = { action: "SaveBook", book };
-          chrome.runtime.sendMessage(message);
+          chrome.runtime.sendMessage(message), (response) => {
+            if (chrome.runtime.lastError) {
+              console.log("Error saving book", chrome.runtime.lastError);
+            } else {
+              console.log("Message Response", book);
+            }
+          });
         } else {
-          console.log("Received book", book);
+          console.log("Recieved book", book);
         }
 
         setBook(book);
-
         resolve(book);
       } catch (e) {
+        console.log("Error fetching book", e);
         return reject(e);
       }
     });
@@ -94,15 +100,8 @@ function Popup() {
   // Determine dark mode and define colors for it
   const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-  const variableDarkModeContainer = { // we don't have to worry about the bg color here as it is managed by / inherited from the variableDarkModeRoot css
-    color: "#fff"
-  }
-
-  const variableDarkModeBox = {
-    backgroundColor: "#555",
-    color: "#fff",
-  }
-
+  const variableDarkModeContainer = { color: "#fff" }
+  const variableDarkModeBox = { backgroundColor: "#555", color: "#fff" }
   const variableDarkModeReset = {
     "text-align": "right",
     backgroundColor: "#242424",
@@ -116,14 +115,28 @@ function Popup() {
           <Box width={1}>
             <Heading fontSize={2}>eBook PDF Creator 📖</Heading>
           </Box>
-          {book && <ResetButton reset={reset} styleOverride={darkMode ? variableDarkModeReset : null}>Reset</ResetButton>}
+          {book && (
+            <ResetButton 
+            reset={reset} 
+            styleOverride={darkMode ? variableDarkModeReset : null}
+            >
+              Reset
+            </ResetButton>
+          )}
         </Flex>
         {book && (
           <>
-            <Card bg="#EEE" borderRadius={3} my={2} style={darkMode ? variableDarkModeBox : null}>
+            <Card 
+            bg="#EEE" 
+            borderRadius={3} 
+            my={2} 
+            style={darkMode ? variableDarkModeBox : null}
+            >
               <Text fontSize={1}>
                 <b>Book URL:</b> <br />
-                <a style={{ "color": "#f45752" }} href={book.url}>{book.url}</a>
+                <a style={{ color: "#f45752" }} href={book.url}>
+                  {book.url}
+                </a>
               </Text>
             </Card>
             {book.pages.length > 0 ? (
@@ -160,6 +173,6 @@ function Popup() {
         ))}
     </Box>
   );
-};
+}
 
 export default Popup;
