@@ -8,12 +8,12 @@ import {
   savePage
 } from "./actions";
 
-let lastURL;
+// Listen for messages from the popup
+let lastURL: string | null = null;
 
 chrome.runtime.onInstalled.addListener(() => {
   updatePageAction();
-
-  console.log("XXX");
+  console.log("Extension installed and pahe action updated");
 
   // Listen to messages sent from other parts of the extension.
   chrome.runtime.onMessage.addListener(
@@ -21,27 +21,32 @@ chrome.runtime.onInstalled.addListener(() => {
       // onMessage must return "true" if response is async.
       let isResponseAsync = false;
 
-      if (request.action === "ClearBook") {
-        isResponseAsync = true;
-        lastURL = null;
-        deleteBook(request.bookURL, () => {
-          sendResponse(null);
-        });
-      }
+      switch (request.action) {
+        case "ClearBook":
+          isResponseAsync = true;
+          lastURL = null;
+          deleteBook(request.bookURL, () => {
+            sendResponse(null);
+          });
+          break;
 
-      if (request.action === "SaveBook") {
-        isResponseAsync = true;
-        saveBook(request.book, () => sendResponse(request.book));
-      }
+        case "SaveBook":
+          isResponseAsync = true;
+          saveBook(request.book, () => sendResponse(request.book));
+          break;
 
-      if (request.action === "UpdatePageOrder") {
-        isResponseAsync = true;
-        asyncUpdatePageOrder(request, sendResponse);
-      }
+        case "UpdatePageOrder":
+          isResponseAsync = true;
+          asyncUpdatePageOrder(request, sendResponse);
+          break;
 
-      return isResponseAsync;
-    }
-  );
+        default:
+          console.warn("Unknown action:", request.action);
+        }
+
+        return isResponseAsync;
+      }
+    );
 
   // Show page action on the right domain
   chrome.declarativeContent.onPageChanged.removeRules(undefined, () => {
