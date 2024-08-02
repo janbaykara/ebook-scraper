@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { Heading, Box, Card, Flex, Text, Button } from "rebass";
 import { getURL, getBookURL, getBook } from "../common/utils";
 import { Page, ResetButton, Checkbox } from "./Components";
-import { createPDF } from './pdf';
+import { createPDF } from "./pdf";
 
 function Popup() {
   // const [pageNumber, setPageNumber] = useState<number>(undefined);
   const [displayPages, setDisplayPages] = useState<boolean>(false);
-  const [book, setBook] = useState<Book>(undefined);
+  const [book, setBook] = useState<Book | undefined>(undefined);
 
   useEffect(() => {
     try {
@@ -52,61 +52,61 @@ function Popup() {
           console.log("No book", book);
           book = { url, pages: [] };
           const message: Messages.SaveBook = { action: "SaveBook", book };
-          chrome.runtime.sendMessage(message), (response) => {
+          chrome.runtime.sendMessage(message, (response) => {
             if (chrome.runtime.lastError) {
-              console.log("Error saving book", chrome.runtime.lastError);
+              console.error("Error saving book:", chrome.runtime.lastError);
             } else {
-              console.log("Message Response", book);
+              console.log("Message Response:", response);
             }
           });
         } else {
-          console.log("Recieved book", book);
+          console.log("Received book", book);
         }
 
         setBook(book);
         resolve(book);
       } catch (e) {
-        console.log("Error fetching book", e);
+        console.error("Error fetching book", e);
         return reject(e);
       }
     });
   };
 
   const download = async () => {
-    if (!book.url) return;
+    if (!book?.url) return;
     createPDF(book);
   };
 
   const reset = async () => {
-    if (!book.url) return;
+    if (!book?.url) return;
     const message: Messages.ClearBook = {
       action: "ClearBook",
       bookURL: book.url
     };
-    return await chrome.runtime.sendMessage(message, fetchBook);
+    chrome.runtime.sendMessage(message, fetchBook);
   };
 
   const updatePageOrder = async (oldIndex: number, newIndex: number) => {
-    if (!book.url) return;
+    if (!book?.url) return;
     const message: Messages.UpdatePageOrder = {
       action: "UpdatePageOrder",
       bookURL: book.url,
       oldIndex,
       newIndex
     };
-    return await chrome.runtime.sendMessage(message, fetchBook);
+    chrome.runtime.sendMessage(message, fetchBook);
   };
 
   // Determine dark mode and define colors for it
   const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-  const variableDarkModeContainer = { color: "#fff" }
-  const variableDarkModeBox = { backgroundColor: "#555", color: "#fff" }
+  const variableDarkModeContainer = { color: "#fff" };
+  const variableDarkModeBox = { backgroundColor: "#555", color: "#fff" };
   const variableDarkModeReset = {
-    "text-align": "right",
+    textAlign: "right",
     backgroundColor: "#242424",
     border: "1px solid red"
-  }
+  };
 
   return (
     <Box width={250} style={darkMode ? variableDarkModeContainer : null}>
