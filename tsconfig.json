@@ -3,11 +3,14 @@
     "target": "es5",
     "module": "commonjs",
     "moduleResolution": "node",
-    "rootDir": "./",
+    "rootDir": "./src",
     "outDir": "dist/js",
     "sourceMap": true,
     "jsx": "react",
     "lib": ["esnext", "dom"],
-    "experimentalDecorators": true
-  }
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"]
 }
