@@ -99,3 +99,15 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
     chrome.action.setBadgeBackgroundColor({ color: "#f45752" });
   }
 });
+// Ping interval to send status message every 10 seconds
+const pingInterval = setInterval(() => {
+  chrome.runtime.sendMessage({
+    status: "ping",
+  });
+}, 10000); // Ping every 10 seconds
+
+// Clear the interval when the extension or page is unloaded
+chrome.runtime.onSuspend.addListener(() => {
+  clearInterval(pingInterval);
+  console.log("Extension unloaded, ping interval cleared.");
+});

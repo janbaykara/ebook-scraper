@@ -1,6 +1,6 @@
 import webpack = require("webpack");
 
-const path = require("path");
+import * as path from "path";
 
 const webpackConfig: webpack.Configuration = {
   resolveLoader: {
@@ -50,7 +50,7 @@ const webpackConfig: webpack.Configuration = {
     ]
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"]
+    extensions: [".ts", ".tsx", ".js", ".json"]
   },
   node: {
     fs: "empty"
