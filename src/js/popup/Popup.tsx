@@ -73,12 +73,12 @@ function Popup() {
   };
 
   const download = async () => {
-    if (!book?.url) return;
+    if (!book || !book.url) return;
     createPDF(book);
   };
 
   const reset = async () => {
-    if (!book?.url) return;
+    if (!book || !book.url) return;
     const message: Messages.ClearBook = {
       action: "ClearBook",
       bookURL: book.url
@@ -87,7 +87,7 @@ function Popup() {
   };
 
   const updatePageOrder = async (oldIndex: number, newIndex: number) => {
-    if (!book?.url) return;
+    if (!book || !book.url) return;
     const message: Messages.UpdatePageOrder = {
       action: "UpdatePageOrder",
       bookURL: book.url,
