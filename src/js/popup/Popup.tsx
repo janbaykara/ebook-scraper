@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import { useEffect, useState } from "react";
 import { Heading, Box, Card, Flex, Text, Button } from "rebass";
 import { getURL, getBookURL, getBook } from "../common/utils";
@@ -173,6 +173,13 @@ function Popup() {
         ))}
     </Box>
   );
-}
+};
+const Popup: React.FC = () => {
+  return (
+    <div>
+      <h1>Hello, this is the Popup Component!</h1>
+    </div>
+  );
+};
 
 export default Popup;
