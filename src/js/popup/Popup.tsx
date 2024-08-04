@@ -174,12 +174,5 @@ function Popup() {
     </Box>
   );
 };
-const Popup: React.FC = () => {
-  return (
-    <div>
-      <h1>Hello, this is the Popup Component!</h1>
-    </div>
-  );
-};
 
 export default Popup;
