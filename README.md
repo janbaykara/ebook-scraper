@@ -17,3 +17,13 @@
 - Dawsonera
 - ProQuest
 - JStor
+
+## Updates made by @Llyrus
+
+- updated some dependancies
+- fixed the reset button
+
+- to install:
+-   `npm i webpack`
+-   `npm run build`
+-   load unpacked dist in chrom extensions

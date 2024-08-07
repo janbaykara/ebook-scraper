@@ -14,12 +14,24 @@ export async function getURL(): Promise<false | URL> {
   return tab ? new URL(tab.url) : false;
 }
 
-export function getBookURL(url: URL): string {
-  const site = sites.find(site => site.host === url.host);
+// export function getBookURL(url: URL): string {
+//   const site = sites.find(site => site.host === url.host);
 
-  if (site) {
-    return site.constructBookURL(url);
+//   if (site) {
+//     return site.constructBookURL(url);
+//   }
+// }
+export function getBookURL(url: URL): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const site = sites.find(site => site.host === url.host);
+
+    if (site){
+      const bookURL = site.constructBookURL(url);
+      resolve(bookURL);
+    } else {
+    reject("URL not found");
   }
+  });
 }
 
 /**
