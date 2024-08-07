@@ -45,7 +45,7 @@ function Popup() {
           return reject("Couldn't get URL for this book");
         }
 
-        const url = getBookURL(_url);
+        const url = await getBookURL(_url);
         let book = await getBook(url);
 
         if (!book) {

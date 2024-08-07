@@ -39,9 +39,8 @@ export const savePage = (pageImageURL: string): Promise<boolean> => {
     };
     const bookURL = await getBookURL(url);
     if (!bookURL) {
-      console.error({ url, bookURL })
-      return reject("Could not get book URL")
-    };
+      throw new Error("Could not get active tab URL")
+  }
     const book = await getBook(bookURL);
     const bookIsValid = !!book && book.pages && Array.isArray(book.pages);
     if (bookIsValid) {
