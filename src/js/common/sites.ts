@@ -28,7 +28,9 @@ interface SiteConfig {
    * as a page image
    */
   testPageImageURL(
-    request: chrome.webRequest.WebRequestBodyDetails, // Changed type
+    request:
+      | chrome.webRequest.WebRequestBodyDetails
+      | chrome.webRequest.WebResponseCacheDetails,
     url: URL
   ): boolean;
   /**
@@ -39,7 +41,7 @@ interface SiteConfig {
 }
 
 const sites: SiteConfig[] = [
-  //https://www.proquest.com/docview/2837705652/bookReader?sourcetype=Books 
+  //https://www.proquest.com/docview/2837705652/bookReader?sourcetype=Books
   {
     name: "ProQuest",
     chromeURLScope: "*://*.proquest.com/*",
@@ -48,15 +50,15 @@ const sites: SiteConfig[] = [
     constructBookURL: (url: URL) => {
       // For ProQuest, we want to extract a meaningful book identifier
       // from the current page URL, not from the image URL
-      if (url.pathname.includes('/docview/')) {
+      if (url.pathname.includes("/docview/")) {
         const pathMatch = url.pathname.match(/\/docview\/(\d+)/);
         if (pathMatch) {
           return `proquest.com/docview/${pathMatch[1]}`;
         }
       }
 
-      if (url.pathname.includes('/bookReader')) {
-        return url.href.replace('https://', '').replace('http://', '');
+      if (url.pathname.includes("/bookReader")) {
+        return url.href.replace("https://", "").replace("http://", "");
       }
 
       // Fallback
@@ -64,14 +66,16 @@ const sites: SiteConfig[] = [
     },
     pageResourceURLFilter: "*://ebookcentral.proquest.com/*/docImage.action*",
     testPageImageURL: (request, url) => {
-      return url.hostname.includes('ebookcentral.proquest.com') &&
-        url.pathname.includes('/docImage.action') &&
-        url.searchParams.has('encrypted');
+      return (
+        url.hostname.includes("ebookcentral.proquest.com") &&
+        url.pathname.includes("/docImage.action") &&
+        url.searchParams.has("encrypted")
+      );
     },
     getPageImageURL: async (url: URL) => {
       // Return the image URL directly
       return url.href;
-    }
+    },
   },
   {
     name: "ProQuest Ebook Central",
@@ -80,7 +84,7 @@ const sites: SiteConfig[] = [
     readerDomain: { hostContains: "proquest.com" },
     constructBookURL: (url: URL) => {
       // For ProQuest Ebook Central, the book URL structure is different
-      if (url.pathname.includes('/docview/')) {
+      if (url.pathname.includes("/docview/")) {
         const pathMatch = url.pathname.match(/\/docview\/(\d+)/);
         if (pathMatch) {
           return `proquest.com/docview/${pathMatch[1]}`;
@@ -92,15 +96,36 @@ const sites: SiteConfig[] = [
     },
     pageResourceURLFilter: "*://ebookcentral.proquest.com/*/docImage.action*",
     testPageImageURL: (request, url) => {
-      return url.hostname.includes('ebookcentral.proquest.com') &&
-        url.pathname.includes('/docImage.action') &&
-        url.searchParams.has('encrypted');
+      return (
+        url.hostname.includes("ebookcentral.proquest.com") &&
+        url.pathname.includes("/docImage.action") &&
+        url.searchParams.has("encrypted")
+      );
     },
     getPageImageURL: async (url: URL) => {
       // Return the image URL directly
       return url.href;
-    }
-  }
+    },
+  },
+  {
+    name: "JStor",
+    chromeURLScope: "*://www.jstor.org/",
+    host: "www.jstor.org",
+    readerDomain: {
+      urlContains: "jstor.org/stable/",
+    },
+    pageResourceURLFilter: "*://*.jstor.org/*",
+    // e.g. https://www.jstor.org/stable/41857568?read-now=1&seq=1#metadata_info_tab_contents
+    constructBookURL: (url) => `${url.host}${url.pathname}`,
+    testPageImageURL: (request, url) =>
+      ["image", "xmlhttprequest"].includes(request.type) &&
+      url.host === "www.jstor.org" &&
+      (// e.g. https://www.jstor.org/stable/get_image/41857568?path=czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvNDhiMDU4ZTYvMWY4MC8zY2NlLzlmNzEvZjcxMGNiMWQ2MWYyL2k0MDA4Nzg0MC80MTg1NzU2OC9pbWFnZXMvcGFnZXMvZHRjLjExLnRpZi5naWY
+      (url.pathname.includes("get_image") && url.searchParams.has("path")) ||
+        // e.g. https://www.jstor.org/page-scan-delivery/get-page-scan/41857568/2"
+        url.pathname.includes("page-scan")),
+    getPageImageURL: (url) => Promise.resolve(url.toString()),
+  },
 ];
 
 export default sites;

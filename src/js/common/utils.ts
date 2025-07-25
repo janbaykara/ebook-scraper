@@ -28,7 +28,7 @@ export function getBookURL(url: URL): string | undefined {
  * @param path
  */
 export function extractPageImageURL(
-  request: chrome.webRequest.WebRequestBodyDetails // Changed type
+  request: chrome.webRequest.WebRequestBodyDetails | chrome.webRequest.WebResponseCacheDetails
 ): Promise<string | null> {
   const url = new URL(request.url);
 
