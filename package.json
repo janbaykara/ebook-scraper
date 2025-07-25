@@ -2,6 +2,10 @@
   "name": "ebook-scraper",
   "version": "1.1.1",
   "description": "Save eBook pages as a PDF",
+  "engines": {
+    "node": ">=22.14.0 <23",
+    "npm": ">=10.9.2 <11"
+  },
   "scripts": {
     "build": "webpack --mode=production",
     "watch": "webpack --mode=development --watch",
