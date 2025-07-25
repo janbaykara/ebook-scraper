@@ -31,7 +31,7 @@
     "@emotion/styled": "^11.14.0",
     "@types/object-hash": "^3.0.6",
     "framer-motion": "^12.15.0",
-    "jspdf": "^2.5.1",
+    "jspdf": "^3.0.1",
     "object-hash": "^3.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
