@@ -1,6 +1,5 @@
 import webpack = require("webpack");
-
-const path = require("path");
+import path = require("path");
 
 const webpackConfig: webpack.Configuration = {
   resolveLoader: {
@@ -21,11 +20,9 @@ const webpackConfig: webpack.Configuration = {
     rules: [
       {
         // Only apply these loaders to manifest.json.
-        test: /manifest.json$/,
+        test: /manifest\.json$/,
         // Loaders are applied in reverse order.
         use: [
-          // Second: JSON -> JS
-          // "json-loader",
           // First: partial manifest.json -> complete manifest.json
           "manifest-loader"
         ]
@@ -50,10 +47,12 @@ const webpackConfig: webpack.Configuration = {
     ]
   },
   resolve: {
-    extensions: [".ts", ".tsx", ".js"]
-  },
-  node: {
-    fs: "empty"
+    extensions: [".ts", ".tsx", ".js"],
+    fallback: {
+      "fs": false,
+      "path": false,
+      "os": false
+    }
   }
 };
 

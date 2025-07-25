@@ -11,8 +11,9 @@ export const updatePageAction = async () => {
   const url = await getURL();
   if (!url) throw new Error();
   const bookURL = await getBookURL(url);
+  if (!bookURL) return;
   const book = await getBook(bookURL);
-  if (!book || !tab) return;
+  if (!book || !tab || !tab.id) return;
 
   if (book.pages.length > 999) {
     chrome.action.setBadgeText({ text: "999+", tabId: tab.id })
@@ -25,58 +26,80 @@ export const asyncUpdatePageOrder: MessageResponse<
   Messages.UpdatePageOrder
 > = async ({ oldIndex, newIndex, numPages, bookURL }, sendResponse) => {
   const book = await getBook(bookURL);
-  if (!book) return Promise.reject(false);
-  book.pages = move(book.pages, oldIndex, newIndex, numPages);
-  saveBook(book, () => sendResponse(book));
+
+  if (!book) return sendResponse(false);
+
+  move(book.pages, oldIndex, newIndex, numPages);
+
+  chrome.storage.local.set({ [bookURL]: book }, () => {
+    chrome.runtime.sendMessage({
+      action: "BookWasUpdated",
+      book
+    } as Messages.BookWasUpdated);
+
+    sendResponse(book);
+  });
 };
 
 export const savePage = (pageImageURL: string): Promise<boolean> => {
+  console.log("savePage called with:", pageImageURL);
+
   return new Promise(async (resolve, reject) => {
-    const url = await getURL();
-    if (!url) {
-      console.error({ url })
-      return reject("Could not get active tab URL")
-    };
-    const bookURL = await getBookURL(url);
-    if (!bookURL) {
-      console.error({ url, bookURL })
-      return reject("Could not get book URL")
-    };
-    const book = await getBook(bookURL);
-    const bookIsValid = !!book && book.pages && Array.isArray(book.pages);
-    if (bookIsValid) {
-      const pageIsAlreadyInTheBook = book.pages.indexOf(pageImageURL) > -1;
-      if (pageIsAlreadyInTheBook) return resolve(true);
-      // Try to append images to existing books
-      book.pages.push(pageImageURL);
-      book.pages = Array.from(new Set(book.pages));
-      console.info(`Updating book`);
-      saveBook(book, () => resolve(true));
-    } else {
-      // Or else start a new one init
-      const newBook: Book = { url: bookURL, pages: [pageImageURL] };
-      console.info(`Creating new book`, newBook);
-      saveBook(newBook, () => resolve(true));
+    try {
+      // Get the current tab to determine the book URL
+      const tab = await getActiveTab();
+      if (!tab || !tab.url) {
+        console.log("No active tab found");
+        return resolve(false);
+      }
+
+      const currentURL = new URL(tab.url);
+      const bookURL = getBookURL(currentURL);
+
+      if (!bookURL) {
+        console.log("Could not determine book URL from:", tab.url);
+        return resolve(false);
+      }
+
+      console.log("Saving page to book:", bookURL);
+
+      // Get or create the book
+      let book = await getBook(bookURL);
+      if (!book) {
+        book = { url: bookURL, pages: [] };
+        console.log("Created new book for:", bookURL);
+      }
+
+      // Add the page if it's not already there
+      if (!book.pages.includes(pageImageURL)) {
+        book.pages.push(pageImageURL);
+        console.log("Added page to book. Total pages:", book.pages.length);
+
+        // Save the updated book
+        chrome.storage.local.set({ [bookURL]: book }, () => {
+          console.log("Book saved to storage");
+
+          // Notify popup of update
+          chrome.runtime.sendMessage({
+            action: "BookWasUpdated",
+            book
+          } as Messages.BookWasUpdated);
+
+          resolve(true);
+        });
+      } else {
+        console.log("Page already exists in book");
+        resolve(false);
+      }
+    } catch (e) {
+      console.error("Error in savePage:", e);
+      reject(e);
     }
   });
 };
 
 export const saveBook = (book: Book, cb = (): any => null) => {
-  if (
-    !(
-      book &&
-      book.url &&
-      book.url !== "undefined" &&
-      typeof book.url !== "undefined"
-    )
-  ) {
-    return;
-  }
-  chrome.storage.local.set({ [book.url]: book }, () => {
-    console.log(`Saved book: ${book.url} (${book.pages.length})`);
-    postBookUpdate(book);
-    cb();
-  });
+  chrome.storage.local.set({ [book.url]: book }, cb);
 };
 
 export const deleteBook = (bookUrl: string, cb = (): any => null) => {

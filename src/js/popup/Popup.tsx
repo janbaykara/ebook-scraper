@@ -1,165 +1,273 @@
-import * as React from "react";
-import { useEffect, useState } from "react";
-import { Heading, Box, Card, Flex, Text, Button } from "rebass";
-import { getURL, getBookURL, getBook } from "../common/utils";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  VStack,
+  HStack,
+  Text,
+  Button,
+  Heading,
+  Separator
+} from "@chakra-ui/react";
 import { Page, ResetButton, Checkbox } from "./Components";
-import { createPDF } from './pdf';
+import { createPDF } from "./pdf";
+import { getURL, getBookURL, getBook } from "../common/utils";
 
 function Popup() {
-  // const [pageNumber, setPageNumber] = useState<number>(undefined);
+  console.log("Popup component rendering...");
+
   const [displayPages, setDisplayPages] = useState<boolean>(false);
-  const [book, setBook] = useState<Book>(undefined);
+  const [book, setBook] = useState<Book | undefined>(undefined);
 
   useEffect(() => {
+    console.log("Popup useEffect running...");
+
     try {
       fetchBook();
     } catch (e) {
-      // No book to begin with
+      console.error("Error in fetchBook:", e);
     }
 
-    chrome.runtime.onMessage.addListener(
-      (request: ScraperMessage, sender, sendResponse) => {
-        // onMessage must return "true" if response is async.
-        let isResponseAsync = false;
+    chrome.runtime.onMessage.addListener((request: ScraperMessage, sender, sendResponse) => {
+      console.log("Popup received message:", request);
 
-        if (request.action === "BookWasUpdated") {
-          setBook(request.book || undefined);
-        }
-
-        return isResponseAsync;
+      let isResponseAsync = false;
+      if (request.action === "BookWasUpdated") {
+        setBook(request.book || undefined);
+        console.log("Book updated from message");
       }
-    );
+      return isResponseAsync;
+    });
   }, []);
 
-  const toggleDisplayPages = (_displayPages = !displayPages) =>
+  const toggleDisplayPages = (_displayPages = !displayPages) => {
+    console.log("Toggling display pages:", _displayPages);
     setDisplayPages(_displayPages);
+  };
 
   const fetchBook = (): Promise<Book> => {
-    console.log("fetching book");
+    console.log("fetchBook called");
+
     return new Promise(async (resolve, reject) => {
       try {
         const _url = await getURL();
+        console.log("Got URL:", _url);
 
         if (!_url) {
-          console.log("No URL");
+          console.log("No URL available");
           return reject("Couldn't get URL for this book");
         }
 
         const url = getBookURL(_url);
+        console.log("Book URL:", url);
+
+        if (!url) {
+          console.log("Could not generate book URL");
+          return reject("Could not get book URL");
+        }
+
         let book = await getBook(url);
+        console.log("Got book:", book);
 
         if (!book) {
-          console.log("No book", book);
+          console.log("No book found, creating new one");
           book = { url, pages: [] };
           const message: Messages.SaveBook = { action: "SaveBook", book };
           chrome.runtime.sendMessage(message);
         } else {
-          console.log("Received book", book);
+          console.log("Received existing book with", book.pages?.length || 0, "pages");
         }
 
         setBook(book);
-
         resolve(book);
       } catch (e) {
+        console.error("Error in fetchBook:", e);
         return reject(e);
       }
     });
   };
 
   const download = async () => {
-    if (!book.url) return;
-    createPDF(book);
+    console.log("Download clicked");
+
+    if (!book?.url) {
+      console.log("No book URL for download");
+      return;
+    }
+
+    try {
+      await createPDF(book);
+      console.log("PDF created successfully");
+    } catch (e) {
+      console.error("Download error:", e);
+    }
   };
 
   const reset = async () => {
-    if (!book.url) return;
+    console.log("Reset clicked");
+
+    if (!book?.url) {
+      console.log("No book URL for reset");
+      return;
+    }
+
     const message: Messages.ClearBook = {
       action: "ClearBook",
       bookURL: book.url
     };
-    return await chrome.runtime.sendMessage(message, fetchBook);
+
+    try {
+      await chrome.runtime.sendMessage(message);
+      await fetchBook();
+    } catch (e) {
+      console.error("Reset error:", e);
+    }
   };
 
   const updatePageOrder = async (oldIndex: number, newIndex: number) => {
-    if (!book.url) return;
+    console.log("Updating page order:", oldIndex, "->", newIndex);
+
+    if (!book?.url) return;
+
     const message: Messages.UpdatePageOrder = {
       action: "UpdatePageOrder",
       bookURL: book.url,
       oldIndex,
-      newIndex
+      newIndex,
+      numPages: 1
     };
+
     return await chrome.runtime.sendMessage(message, fetchBook);
   };
 
-  // Determine dark mode and define colors for it
-  const darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const deletePage = async (pageIndex: number) => {
+    console.log("Deleting page at index:", pageIndex);
 
-  const variableDarkModeContainer = { // we don't have to worry about the bg color here as it is managed by / inherited from the variableDarkModeRoot css
-    color: "#fff"
-  }
+    if (!book?.url) return;
 
-  const variableDarkModeBox = {
-    backgroundColor: "#555",
-    color: "#fff",
-  }
+    // Create a new book object with the page removed
+    const updatedPages = [...book.pages];
+    updatedPages.splice(pageIndex, 1);
 
-  const variableDarkModeReset = {
-    "text-align": "right",
-    backgroundColor: "#242424",
-    border: "1px solid red"
-  }
+    const updatedBook = { ...book, pages: updatedPages };
+
+    // Save the updated book
+    const message: Messages.SaveBook = {
+      action: "SaveBook",
+      book: updatedBook
+    };
+
+    try {
+      await chrome.runtime.sendMessage(message);
+      setBook(updatedBook);
+    } catch (e) {
+      console.error("Delete page error:", e);
+    }
+  };
+
+  console.log("Rendering popup with book:", book);
+
+  // Filter out only actual image pages for display
+  const imagePages = book?.pages?.filter(url =>
+    url.includes('/docImage.action') && url.includes('encrypted=')
+  ) || [];
 
   return (
-    <Box width={250} style={darkMode ? variableDarkModeContainer : null}>
-      <Box>
-        <Flex justifyContent="between" alignItems="center">
-          <Box width={1}>
-            <Heading fontSize={2}>eBook PDF Creator 📖</Heading>
-          </Box>
-          {book && <ResetButton reset={reset} styleOverride={darkMode ? variableDarkModeReset : null}>Reset</ResetButton>}
-        </Flex>
-        {book && (
-          <>
-            <Card bg="#EEE" borderRadius={3} my={2} style={darkMode ? variableDarkModeBox : null}>
-              <Text fontSize={1}>
-                <b>Book URL:</b> <br />
-                <a style={{ "color": "#f45752" }} href={book.url}>{book.url}</a>
+    <Box
+      width="450px"
+      p={4}
+      minHeight="400px"
+      maxHeight="600px"
+      bg="white"
+      color="black"
+      fontFamily="system-ui, -apple-system, sans-serif"
+    >
+      <VStack gap={4}>
+        <Heading size="lg" textAlign="center" color="blue.600">
+          eBook Scraper
+        </Heading>
+
+        {/* <Separator borderColor="gray.300" /> */}
+
+        {book ? (
+          <VStack gap={3} width="100%">
+            <Box textAlign="center">
+              <Text fontSize="md" fontWeight="bold" color="gray.800">
+                Total captures: {book.pages?.length || 0}
               </Text>
-            </Card>
-            {book.pages.length > 0 ? (
-              <Button bg="#f45752" onClick={download} css={{ width: "100%" }}>
-                💾 Download PDF ({book.pages.length} pages)
+              <Text fontSize="sm" color="gray.600">
+                Valid images: {imagePages.length}
+              </Text>
+            </Box>
+
+            <HStack gap={2} width="100%">
+              <Button
+                onClick={download}
+                colorPalette="blue"
+                size="md"
+                flex={1}
+                disabled={imagePages.length === 0}
+                bg="blue.500"
+                color="white"
+                _hover={{ bg: "blue.600" }}
+                _disabled={{ bg: "gray.300", color: "gray.500" }}
+              >
+                Download PDF ({imagePages.length} images)
               </Button>
-            ) : (
-              <Button bg="#f45752" disabled>
-                Pages will be collected as you navigate through the book
-              </Button>
+              <ResetButton reset={reset}>
+                Reset
+              </ResetButton>
+            </HStack>
+
+            <Checkbox
+              checked={displayPages}
+              onChange={() => toggleDisplayPages()}
+            >
+              Show captured pages
+            </Checkbox>
+
+            {displayPages && (
+              <Box width="100%">
+                <Text fontSize="sm" color="gray.700" mb={2} fontWeight="medium">
+                  Image Pages ({imagePages.length}):
+                </Text>
+                <VStack
+                  gap={2}
+                  maxHeight="250px"
+                  overflowY="auto"
+                  width="100%"
+                  border="1px solid"
+                  borderColor="gray.300"
+                  borderRadius="md"
+                  p={2}
+                  bg="gray.50"
+                >
+                  {imagePages.map((url, index) => (
+                    <Page
+                      key={url}
+                      url={url}
+                      index={index}
+                      moveUp={index > 0 ? () => updatePageOrder(index, index - 1) : undefined}
+                      moveDown={index < imagePages.length - 1 ? () => updatePageOrder(index, index + 1) : undefined}
+                      deletePage={() => deletePage(index)}
+                    />
+                  ))}
+                </VStack>
+              </Box>
             )}
-          </>
+          </VStack>
+        ) : (
+          <VStack gap={3} textAlign="center" py={8}>
+            <Text fontSize="xl" color="gray.600">
+              Navigate to a ProQuest ebook
+            </Text>
+            <Text fontSize="sm" color="gray.500">
+              Start reading pages to begin capturing images
+            </Text>
+          </VStack>
         )}
-        {book && book.pages && book.pages.length > 0 && (
-          <Checkbox
-            checked={displayPages}
-            onChange={() => toggleDisplayPages()}
-          >
-            Show pages
-          </Checkbox>
-        )}
-      </Box>
-      {displayPages &&
-        book &&
-        book.pages.map((url, i, arr) => (
-          <Page
-            url={url}
-            key={url}
-            moveUp={i > 0 ? () => updatePageOrder(i, i - 1) : undefined}
-            moveDown={
-              i + 1 < arr.length ? () => updatePageOrder(i, i + 1) : undefined
-            }
-          />
-        ))}
+      </VStack>
     </Box>
   );
-};
+}
 
 export default Popup;

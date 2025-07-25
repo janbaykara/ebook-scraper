@@ -5,63 +5,67 @@ import { sha1 } from 'object-hash'
 export function createPDF(book: Book): Promise<jsPDF> {
   return new Promise(async (resolve, reject) => {
     try {
-      if (!book.pages) {
-        reject("Book has no pages to construct a PDF from");
+      if (!book.pages || book.pages.length === 0) {
+        reject(new Error("No pages to create PDF"));
+        return;
       }
 
-      // create a document and pipe to a blob
-      let images: {
-        [key: string]: { image: HTMLImageElement; blobURI: string };
-      } = {};
-
-      const fetchedImages = await Promise.all(
-        book.pages.map(async (url, i) => {
-          return new Promise(async (resolve, reject) => {
-            const blobURI = await fetchAsBlob(url);
-            var image = new Image();
-            image.onload = () => {
-              images[url] = { image, blobURI };
-              if (blobURI) {
-                resolve(true);
-              } else {
-                reject("Couldn't fetch image for page URL");
-              }
-            };
-            image.src = blobURI;
-          });
-        })
+      // Filter out non-image URLs
+      const imagePages = book.pages.filter(url =>
+        url.includes('/docImage.action') && url.includes('encrypted=')
       );
 
-      if (!fetchedImages) {
-        reject("Couldn't fetch images for all pages");
+      if (imagePages.length === 0) {
+        reject(new Error("No valid image pages found"));
+        return;
       }
 
-      // Define the dimensions of the doc
-      const templatePage = Object.values(images)[0];
-      var doc = new jsPDF({
-        unit: "px",
-        format: [templatePage.image.width, templatePage.image.height]
-      });
+      const pdf = new jsPDF('p', 'pt', 'a4'); // portrait, points, A4 size
+      let isFirstPage = true;
 
-      const width = (doc.internal.pageSize as any).getWidth();
-      const height = (doc.internal.pageSize as any).getHeight();
+      for (const pageUrl of imagePages) {
+        const blobURI = await fetchAsBlob(pageUrl);
+        const img = new Image();
+        img.src = blobURI;
 
-      book.pages.forEach((url, i, arr) => {
-        const { blobURI } = images[url];
-        doc.addImage(blobURI, 0, 0, width, height);
-        if (arr.length > i + 1) {
-          doc.addPage();
-        }
-      });
+        await new Promise<void>((imgLoadResolve) => {
+          img.onload = () => {
+            const imgWidth = img.width;
+            const imgHeight = img.height;
 
-      let bookHash = sha1(book)
-      const activeTab = await getActiveTab()
-      const title = `${activeTab ? activeTab.title : book.url} (${book.pages.length} pages) (${bookHash}).pdf`
-      doc.save(title);
+            if (!isFirstPage) {
+              pdf.addPage();
+            } else {
+              isFirstPage = false;
+            }
 
-      resolve(doc);
+            // Calculate dimensions to fit the page
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+            const scaledWidth = imgWidth * ratio;
+            const scaledHeight = imgHeight * ratio;
+
+            // Add the image to the PDF
+            pdf.addImage(img, 'JPEG', 0, 0, scaledWidth, scaledHeight);
+            imgLoadResolve();
+          };
+          img.onerror = () => {
+            console.warn(`Failed to load image: ${pageUrl}`);
+            imgLoadResolve();
+          };
+        });
+      }
+
+      // Generate simple filename
+      const bookId = book.url.split('/').pop()?.replace('docview/', '') || 'ebook';
+      const pageCount = imagePages.length;
+      const filename = `${bookId}_${pageCount}pages`;
+
+      pdf.save(filename);
+      resolve(pdf);
     } catch (e) {
-      return reject(e);
+      reject(e);
     }
   });
 }

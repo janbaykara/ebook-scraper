@@ -11,15 +11,16 @@ export function getActiveTab(): Promise<false | chrome.tabs.Tab> {
 
 export async function getURL(): Promise<false | URL> {
   const tab = await getActiveTab();
-  return tab ? new URL(tab.url) : false;
+  return tab && tab.url ? new URL(tab.url) : false;
 }
 
-export function getBookURL(url: URL): string {
+export function getBookURL(url: URL): string | undefined {
   const site = sites.find(site => site.host === url.host);
 
   if (site) {
     return site.constructBookURL(url);
   }
+  return undefined;
 }
 
 /**
@@ -27,7 +28,7 @@ export function getBookURL(url: URL): string {
  * @param path
  */
 export function extractPageImageURL(
-  request: chrome.webRequest.WebResponseCacheDetails
+  request: chrome.webRequest.WebRequestBodyDetails // Changed type
 ): Promise<string | null> {
   const url = new URL(request.url);
 
@@ -43,7 +44,7 @@ export function extractPageImageURL(
 export const getBook = (url: string): Promise<Book | null> =>
   new Promise(resolve => {
     chrome.storage.local.get(url, (store?: LocalStorageData) => {
-      const book = store[url];
+      const book = store?.[url];
       if (book) {
         return resolve(book);
       }
@@ -66,13 +67,12 @@ export function fetchAsBlob(path: string): Promise<string> {
 }
 
 /**
- *
  * @param array
  * @param from Starting index
  * @param to Finishing index
  * @param on How many elements to move from 'from' (starting index)
  */
-export function move<T extends any[]>(array: T, from, to, on = 1) {
+export function move<T extends any[]>(array: T, from: number, to: number, on = 1) {
   array.splice(to, 0, ...array.splice(from, on));
   return array;
 }

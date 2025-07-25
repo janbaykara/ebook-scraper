@@ -28,99 +28,78 @@ interface SiteConfig {
    * as a page image
    */
   testPageImageURL(
-    request: chrome.webRequest.WebResponseCacheDetails,
+    request: chrome.webRequest.WebRequestBodyDetails, // Changed type
     url: URL
   ): boolean;
   /**
    * Return a page image URI
    * (reference or base64 string)
    */
-  getPageImageURL(url: URL): Promise<string>;
+  getPageImageURL(url: URL): Promise<string | null>; // updated to return null if not found
 }
 
 const sites: SiteConfig[] = [
-  // E.g. https://www.proquest.com/docview/2132069905/bookReader?accountid=16710
+  //https://www.proquest.com/docview/2837705652/bookReader?sourcetype=Books 
   {
     name: "ProQuest",
-    chromeURLScope: "*://*.proquest.com/",
+    chromeURLScope: "*://*.proquest.com/*",
     host: "www.proquest.com",
-    readerDomain: {
-      urlMatches: "proquest\.com/docview/.+/bookReader"
+    readerDomain: { hostContains: "proquest.com" },
+    constructBookURL: (url: URL) => {
+      // For ProQuest, we want to extract a meaningful book identifier
+      // from the current page URL, not from the image URL
+      if (url.pathname.includes('/docview/')) {
+        const pathMatch = url.pathname.match(/\/docview\/(\d+)/);
+        if (pathMatch) {
+          return `proquest.com/docview/${pathMatch[1]}`;
+        }
+      }
+
+      if (url.pathname.includes('/bookReader')) {
+        return url.href.replace('https://', '').replace('http://', '');
+      }
+
+      // Fallback
+      return url.host + url.pathname;
     },
-    pageResourceURLFilter: "*://*.proquest.com/*",
-    constructBookURL: url => `${url.host}${url.pathname}`,
-    testPageImageURL: (request, url) =>
-      request.type === "image" && url.host === "proquest.com",
-    getPageImageURL: url =>
-      Promise.resolve(
-        url.pathname.includes("docImage.action") ? url.toString() : null
-      )
+    pageResourceURLFilter: "*://ebookcentral.proquest.com/*/docImage.action*",
+    testPageImageURL: (request, url) => {
+      return url.hostname.includes('ebookcentral.proquest.com') &&
+        url.pathname.includes('/docImage.action') &&
+        url.searchParams.has('encrypted');
+    },
+    getPageImageURL: async (url: URL) => {
+      // Return the image URL directly
+      return url.href;
+    }
   },
   {
-    /**
-     * Seems to be deprecated as a front-end URL
-     */
     name: "ProQuest Ebook Central",
-    chromeURLScope: "*://*.proquest.com/",
+    chromeURLScope: "*://*.proquest.com/*",
     host: "ebookcentral.proquest.com",
-    readerDomain: {
-      urlContains: "ebookcentral.proquest.com/lib"
+    readerDomain: { hostContains: "proquest.com" },
+    constructBookURL: (url: URL) => {
+      // For ProQuest Ebook Central, the book URL structure is different
+      if (url.pathname.includes('/docview/')) {
+        const pathMatch = url.pathname.match(/\/docview\/(\d+)/);
+        if (pathMatch) {
+          return `proquest.com/docview/${pathMatch[1]}`;
+        }
+      }
+
+      // Fallback to the default behavior
+      return url.host + url.pathname;
     },
-    pageResourceURLFilter: "*://*.proquest.com/*",
-    constructBookURL: url =>
-      `${url.host}${url.pathname}?docID=${url.searchParams.get("docID")}`,
-    testPageImageURL: (request, url) =>
-      request.type === "image" && url.host === "ebookcentral.proquest.com",
-    getPageImageURL: url =>
-      Promise.resolve(
-        url.pathname.includes("docImage.action") ? url.toString() : null
-      )
-  },
-  /**
-   * Company went bankrupt in 2020, all books moved to ProQuest
-   * https://www.ulster.ac.uk/library/updates/resources/dawsonera-e-books-service-closed
-   */
-  {
-    name: "Dawsonera",
-    chromeURLScope: "*://*.dawsonera.com/",
-    host: "www.dawsonera.com",
-    readerDomain: {
-      urlContains: "dawsonera.com/readonline"
+    pageResourceURLFilter: "*://ebookcentral.proquest.com/*/docImage.action*",
+    testPageImageURL: (request, url) => {
+      return url.hostname.includes('ebookcentral.proquest.com') &&
+        url.pathname.includes('/docImage.action') &&
+        url.searchParams.has('encrypted');
     },
-    pageResourceURLFilter: "*://*.dawsonera.com/*",
-    constructBookURL: url => `${url.host}${url.pathname}`,
-    testPageImageURL: (request, url) =>
-      request.type === "image" && url.host === "www.dawsonera.com",
-    getPageImageURL: url =>
-      Promise.resolve(
-        url.pathname.includes("reader") && url.pathname.includes("/page/")
-          ? url.toString()
-          : null
-      )
-  },
-  {
-    name: "JStor",
-    chromeURLScope: "*://www.jstor.org/",
-    host: "www.jstor.org",
-    readerDomain: {
-      urlContains: "jstor.org/stable/"
-    },
-    pageResourceURLFilter: "*://*.jstor.org/*",
-    // e.g. https://www.jstor.org/stable/41857568?read-now=1&seq=1#metadata_info_tab_contents
-    constructBookURL: url => `${url.host}${url.pathname}`,
-    testPageImageURL: (request, url) =>
-      ["image", "xmlhttprequest"].includes(request.type) &&
-      url.host === "www.jstor.org" && (
-        (
-          // e.g. https://www.jstor.org/stable/get_image/41857568?path=czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvNDhiMDU4ZTYvMWY4MC8zY2NlLzlmNzEvZjcxMGNiMWQ2MWYyL2k0MDA4Nzg0MC80MTg1NzU2OC9pbWFnZXMvcGFnZXMvZHRjLjExLnRpZi5naWY
-          url.pathname.includes("get_image") &&
-          url.searchParams.has("path")
-        ) || (
-          // e.g. https://www.jstor.org/page-scan-delivery/get-page-scan/41857568/2"
-          url.pathname.includes('page-scan')
-        )
-      ),
-    getPageImageURL: url => Promise.resolve(url.toString())
+    getPageImageURL: async (url: URL) => {
+      // Return the image URL directly
+      return url.href;
+    }
   }
 ];
 
