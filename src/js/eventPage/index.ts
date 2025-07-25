@@ -102,3 +102,27 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
     chrome.action.setBadgeBackgroundColor({ color: "#f45752" });
   }
 });
+
+// Download ebook page images
+chrome.webRequest.onCompleted.addListener(
+  async function interceptPageResources(request) {
+    // Prevent event overloading
+    if (lastURL === request.url) return;
+    // Ignore requests made by the extension
+    if (request.initiator?.includes("chrome-extension://")) return;
+    lastURL = request.url;
+
+    // Attempt to fetch the underlying image URL (e.g. acquire base64 data urls, image urls, etc.)
+    const pageImageURL = await extractPageImageURL(request);
+    console.log(pageImageURL)
+    if (!pageImageURL) return;
+    try {
+      return await savePage(pageImageURL);
+    } catch (e) {
+      console.error(e);
+    }
+  },
+  {
+    urls: sites.map(site => site.pageResourceURLFilter)
+  }
+);

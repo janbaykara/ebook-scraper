@@ -57,10 +57,11 @@ export function createPDF(book: Book): Promise<jsPDF> {
         });
       }
 
-      // Generate simple filename
-      const bookId = book.url.split('/').pop()?.replace('docview/', '') || 'ebook';
+      // File name
       const pageCount = imagePages.length;
-      const filename = `${bookId}_${pageCount}pages`;
+      const activeTab = await getActiveTab();
+      const title = activeTab ? activeTab.title : book.url;
+      const filename = `${title}_${pageCount}pages.pdf`;
 
       pdf.save(filename);
       resolve(pdf);
