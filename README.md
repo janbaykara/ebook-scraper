@@ -2,9 +2,7 @@
 
 A Chrome extension that compiles PDFs while reading ebooks from supported academic platforms.
 
-### [**Can you help maintain this repository? Let us know! 🌈🛠💬**](https://github.com/janbaykara/ebook-scraper/discussions/12)
-
-![Screenshot](https://i.imgur.com/3zeuWBe.png)
+![Screenshot](screenshot.png)
 
 ## Features
 
@@ -14,23 +12,22 @@ A Chrome extension that compiles PDFs while reading ebooks from supported academ
 
 ## Supported source sites
 
-- Dawsonera
 - ProQuest
 - JStor
+- Dawsonera
 
 ## Installation & Setup
 
 ### Prerequisites
 
-- Node.js (version 16+ recommended)
-- npm or yarn package manager
-- Google Chrome browser
+- [Node.js](https://nodejs.org/)
+- [Google Chrome](https://www.google.com/chrome/)
 
-### Development Setup
+### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:janbaykara/ebook-scraper.git
    cd ebook-scraper
    ```
 
@@ -42,11 +39,6 @@ A Chrome extension that compiles PDFs while reading ebooks from supported academ
 3. **Build the extension**
    ```bash
    npm run build
-   ```
-   
-   Or for development with hot-reload:
-   ```bash
-   npm run watch
    ```
 
 ### Loading the Extension in Chrome
@@ -70,7 +62,7 @@ A Chrome extension that compiles PDFs while reading ebooks from supported academ
 
 ### Usage
 
-1. Navigate to a supported ebook platform (Dawsonera, ProQuest, or JStor)
+1. Navigate to a supported ebook platform (ProQuest, JStor, Dawsonera)
 2. Open an ebook you want to scrape
 3. Click the eBook Scraper extension icon in your toolbar
 4. Use the popup interface to save pages and compile your PDF
@@ -83,9 +75,6 @@ A Chrome extension that compiles PDFs while reading ebooks from supported academ
 - `npm run build` - Build the extension for production
 
 ### Troubleshooting
-
-**Node.js compatibility issues:**
-If you encounter `error:0308010C:digital envelope routines::unsupported`, you're using Node.js 17+ with older dependencies. The build scripts are configured to handle this automatically using the legacy OpenSSL provider.
 
 **Extension not loading:**
 - Make sure you're selecting the `dist/` directory (build output), not the root or `src/` folder
@@ -118,15 +107,6 @@ ebook-scraper/
 │   ├── manifest.json           # Extension manifest template
 │   ├── manifest-loader.js      # Webpack loader for manifest
 │   └── tsconfig.json           # TypeScript configuration
-├── dist/                       # Built extension files (webpack output)
-│   ├── js/                     # Compiled JavaScript
-│   │   ├── eventPage.js        # Background script
-│   │   └── popup.js            # Popup interface
-│   ├── manifest.json           # Final manifest with site permissions
-│   ├── popup.html              # Popup HTML file
-│   ├── variableDarkModeRoot.css # Dark mode styles
-│   ├── 0.js, 1.js, 2.js       # Code-split chunks
-│   └── manifest.js             # Manifest webpack bundle
 ├── package.json                # Dependencies and scripts
 └── webpack.config.js           # Webpack configuration
 ```
