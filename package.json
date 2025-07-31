@@ -1,33 +1,19 @@
 {
   "name": "ebook-scraper",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Save eBook pages as a PDF",
+  "type": "module",
   "engines": {
     "node": ">=22.14.0 <23",
     "npm": ">=10.9.2 <11"
   },
   "scripts": {
-    "build": "webpack --mode=production",
-    "watch": "webpack --mode=development --watch",
-    "dev": "webpack serve --mode=development"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
   },
   "author": "Jan Baykara",
   "license": "MIT",
-  "devDependencies": {
-    "@types/chrome": "^0.0.246",
-    "@types/react": "^18.2.45",
-    "@types/react-dom": "^18.2.18",
-    "@types/webpack": "^5.28.5",
-    "copy-webpack-plugin": "^13.0.0",
-    "css-loader": "^6.8.1",
-    "style-loader": "^3.3.3",
-    "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^4.15.1"
-  },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^3.19.1",
@@ -39,5 +25,13 @@
     "object-hash": "^3.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.246",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.6.0",
+    "typescript": "^5.3.3",
+    "vite": "^7.0.4"
   }
 }

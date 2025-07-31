@@ -17,7 +17,7 @@ interface PageParams {
   deletePage?: () => void;
 }
 
-function Page({ url, index, moveUp, moveDown, deletePage }: PageParams) {
+function Page({ url, moveUp, moveDown, deletePage }: PageParams) {
   return (
     <Flex
       alignItems="center"

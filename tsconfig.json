@@ -1,13 +1,7 @@
 {
-  "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "rootDir": "./",
-    "outDir": "dist/js",
-    "sourceMap": true,
-    "jsx": "react",
-    "lib": ["esnext", "dom"],
-    "experimentalDecorators": true
-  }
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.vite.json" }
+  ]
 }

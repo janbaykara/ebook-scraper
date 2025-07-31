@@ -71,8 +71,9 @@ A Chrome extension that compiles PDFs while reading ebooks from supported academ
 
 ### Available Scripts
 
-- `npm run watch` - Start development mode with hot-reload
+- `npm run dev` - Start development mode with hot-reload
 - `npm run build` - Build the extension for production
+- `npm run preview` - Serve the compiled production build locally from dist
 
 ### Troubleshooting
 
@@ -104,11 +105,14 @@ ebook-scraper/
 │   │   │   └── pdf.ts          # PDF generation logic
 │   │   └── types/              # TypeScript definitions
 │   │       └── declarations.d.ts
-│   ├── manifest.json           # Extension manifest template
-│   ├── manifest-loader.js      # Webpack loader for manifest
-│   └── tsconfig.json           # TypeScript configuration
+│   ├── manifest/
+|       ├── plugin.ts           # Vite plugin for injesting manifest site permissions
+|       └── template.json       # Extension manifest template
 ├── package.json                # Dependencies and scripts
-└── webpack.config.js           # Webpack configuration
+├── tsconfig.json               # Base TypeScript configuration
+├── tsconfig.app.json           # App TypeScript configuration
+├── tsconfig.vite.json          # Vite bundler TypeScript configuration
+└── vite.config.ts              # Vite configuration
 ```
 
 ## Contributing

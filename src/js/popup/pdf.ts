@@ -1,6 +1,5 @@
 import { fetchAsBlob, getActiveTab } from '../common/utils';
 import { jsPDF } from 'jspdf';
-import { sha1 } from 'object-hash'
 
 export function createPDF(book: Book): Promise<jsPDF> {
   return new Promise(async (resolve, reject) => {

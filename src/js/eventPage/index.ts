@@ -12,7 +12,7 @@ let lastURL: string | undefined;
 
 // Move message listener setup to top level so it persists through service worker wake/sleep cycles
 chrome.runtime.onMessage.addListener(
-  async (request: ScraperMessage, sender, sendResponse) => {
+  async (request: ScraperMessage, _sender, sendResponse) => {
     console.log("Background received message:", request);
     let isResponseAsync = false;
 
@@ -96,7 +96,7 @@ chrome.webRequest.onBeforeRequest.addListener(
   }
 );
 
-chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener(async function (_tabId, changeInfo) {
   if (changeInfo.status === "complete") {
     updatePageAction();
     chrome.action.setBadgeBackgroundColor({ color: "#f45752" });

@@ -2,12 +2,7 @@
 node_modules/
 
 # Build outputs 
-dist/js/
-dist/manifest.json
-dist/*.js
-
-# Backup folder
-dist_backup/
+dist
 
 # Development files
 *.log
@@ -16,8 +11,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # IDE/Editor files
-.vscode/
-.idea/
 *.swp
 *.swo
 *~
