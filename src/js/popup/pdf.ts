@@ -65,6 +65,11 @@ export function createPDF(
 
               // Add the image to the PDF
               pdf.addImage(img, "JPEG", 0, 0, scaledWidth, scaledHeight);
+
+              //Free blobs after images are added to prevent memory overload
+              URL.revokeObjectURL(img.src);
+              img.src = "";
+
               imgLoadResolve();
             };
             img.onerror = () => {
@@ -92,7 +97,9 @@ export function createPDF(
       const filename = `${title}_${totalPages}pages.pdf`;
 
       onLog?.("PDF generation complete.");
+      onLog?.("Starting PDF download.");
       pdf.save(filename);
+      onLog?.("PDF download complete.");
       resolve(pdf);
     } catch (e: any) {
       const err = `Fatal error: ${e.message}`;

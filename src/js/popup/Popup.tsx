@@ -29,7 +29,6 @@ function Popup() {
   useEffect(() => {
     console.log("Popup useEffect running...");
 
-
     try {
       fetchBook();
     } catch (e) {
@@ -50,11 +49,10 @@ function Popup() {
   }, []);
 
   useEffect(() => {
-  if (logEndRef.current) {
-    logEndRef.current.scrollTop = logEndRef.current.scrollHeight;
-  }
-}, [log]);
-
+    if (logEndRef.current) {
+      logEndRef.current.scrollTop = logEndRef.current.scrollHeight;
+    }
+  }, [log]);
 
   const toggleDisplayPages = (_displayPages = !displayPages) => {
     console.log("Toggling display pages:", _displayPages);
@@ -143,6 +141,12 @@ function Popup() {
 
     try {
       await chrome.runtime.sendMessage(message);
+
+      setBook(undefined);
+      setLog([]);
+      setProgress(0);
+      setError(null);
+
       await fetchBook();
     } catch (e) {
       console.error("Reset error:", e);
