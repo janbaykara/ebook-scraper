@@ -1,10 +1,11 @@
 {
   "name": "eBook Scraper",
-  "version": "1.1.1",
+  "version": "[dynamically set by plugin]",
   "description": "Save eBook pages as a PDF",
   "manifest_version": 3,
   "background": {
-    "service_worker": "js/eventPage.js"
+    "service_worker": "js/eventPage.js",
+    "type": "module"
   },
   "action": {
     "default_popup": "popup.html",

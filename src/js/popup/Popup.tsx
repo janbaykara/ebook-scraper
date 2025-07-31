@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   VStack,
@@ -6,7 +6,6 @@ import {
   Text,
   Button,
   Heading,
-  Separator
 } from "@chakra-ui/react";
 import { Page, ResetButton, Checkbox } from "./Components";
 import { createPDF } from "./pdf";
@@ -27,7 +26,7 @@ function Popup() {
       console.error("Error in fetchBook:", e);
     }
 
-    chrome.runtime.onMessage.addListener((request: ScraperMessage, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((request: ScraperMessage) => {
       console.log("Popup received message:", request);
 
       let isResponseAsync = false;

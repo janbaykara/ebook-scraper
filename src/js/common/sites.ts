@@ -65,7 +65,7 @@ const sites: SiteConfig[] = [
       return url.host + url.pathname;
     },
     pageResourceURLFilter: "*://ebookcentral.proquest.com/*/docImage.action*",
-    testPageImageURL: (request, url) => {
+    testPageImageURL: (_request, url) => {
       return (
         url.hostname.includes("ebookcentral.proquest.com") &&
         url.pathname.includes("/docImage.action") &&
@@ -95,7 +95,7 @@ const sites: SiteConfig[] = [
       return url.host + url.pathname;
     },
     pageResourceURLFilter: "*://ebookcentral.proquest.com/*/docImage.action*",
-    testPageImageURL: (request, url) => {
+    testPageImageURL: (_request, url) => {
       return (
         url.hostname.includes("ebookcentral.proquest.com") &&
         url.pathname.includes("/docImage.action") &&
