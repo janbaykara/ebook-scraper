@@ -2,12 +2,16 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 import { manifestTransformPlugin } from './src/manifest/plugin'
+import {version} from './package.json'
 
 export default defineConfig({
   plugins: [
     react(),
     manifestTransformPlugin(),
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+  },
   build: {
     chunkSizeWarningLimit: 1024,
     rollupOptions: {

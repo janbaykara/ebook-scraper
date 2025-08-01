@@ -11,6 +11,8 @@ import { Page, ResetButton, Checkbox } from "./Components";
 import { createPDF } from "./pdf";
 import { getURL, getBookURL, getBook } from "../common/utils";
 
+declare const __APP_VERSION__: string;
+
 function Popup() {
   console.log("Popup component rendering...");
 
@@ -357,6 +359,12 @@ function Popup() {
           </VStack>
         )}
       </VStack>
+      <Box mt={4} textAlign="center" fontSize="xs" color="gray.500">
+  Version: {__APP_VERSION__} |{" "}
+  <a href="https://github.com/janbaykara/ebook-scraper" target="_blank" rel="noreferrer" style={{ color: "blue" }}>
+    GitHub
+  </a>
+</Box>
     </Box>
   );
 }
