@@ -1,20 +1,17 @@
-import { useState, useEffect, useRef} from "react";
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  Heading,
-} from "@chakra-ui/react";
-import { Page, ResetButton, Checkbox } from "./Components";
-import { createPDF } from "./pdf";
-import { getURL, getBookURL, getBook } from "../common/utils";
+import { Box, VStack, HStack, Text, Button, Heading } from '@chakra-ui/react';
+import type { FC } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
+import { getURL, getBookURL, getBook } from '../common/utils';
+import type { Book, ScraperMessage, ClearBook, UpdatePageOrder, SaveBook } from '../types';
+
+import { Page, ResetButton, Checkbox } from './Components';
+import { createPDF } from './pdf';
 
 declare const __APP_VERSION__: string;
 
-function Popup() {
-  console.log("Popup component rendering...");
+export const Popup: FC = () => {
+  console.log('Popup component rendering...');
 
   const [displayPages, setDisplayPages] = useState<boolean>(false);
   const [book, setBook] = useState<Book | undefined>(undefined);
@@ -29,25 +26,31 @@ function Popup() {
   const logEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log("Popup useEffect running...");
+    console.log('Popup useEffect running...');
 
     try {
-      fetchBook();
+      fetchBook()
+        .then((book) => {
+          setBook(book);
+        })
+        .catch((e: unknown) => {
+          console.error('Error fetching book:', e);
+          setError(`Failed to fetch book: ` + (e instanceof Error ? e.message : String(e)));
+        });
     } catch (e) {
-      console.error("Error in fetchBook:", e);
+      console.error('Error in fetchBook:', e);
     }
 
     chrome.runtime.onMessage.addListener((request: ScraperMessage) => {
-      console.log("Popup received message:", request);
+      console.log('Popup received message:', request);
 
-        let isResponseAsync = false;
-        if (request.action === "BookWasUpdated") {
-          setBook(request.book || undefined);
-          console.log("Book updated from message");
-        }
-        return isResponseAsync;
+      const isResponseAsync = false;
+      if (request.action === 'BookWasUpdated') {
+        setBook(request.book || undefined);
+        console.log('Book updated from message');
       }
-    );
+      return isResponseAsync;
+    });
   }, []);
 
   useEffect(() => {
@@ -57,61 +60,15 @@ function Popup() {
   }, [log]);
 
   const toggleDisplayPages = (_displayPages = !displayPages) => {
-    console.log("Toggling display pages:", _displayPages);
+    console.log('Toggling display pages:', _displayPages);
     setDisplayPages(_displayPages);
   };
 
-  const fetchBook = (): Promise<Book> => {
-    console.log("fetchBook called");
-
-    return new Promise(async (resolve, reject) => {
-      try {
-        const _url = await getURL();
-        console.log("Got URL:", _url);
-
-        if (!_url) {
-          console.log("No URL available");
-          return reject("Couldn't get URL for this book");
-        }
-
-        const url = getBookURL(_url);
-        console.log("Book URL:", url);
-
-        if (!url) {
-          console.log("Could not generate book URL");
-          return reject("Could not get book URL");
-        }
-
-        let book = await getBook(url);
-        console.log("Got book:", book);
-
-        if (!book) {
-          console.log("No book found, creating new one");
-          book = { url, pages: [] };
-          const message: Messages.SaveBook = { action: "SaveBook", book };
-          chrome.runtime.sendMessage(message);
-        } else {
-          console.log(
-            "Received existing book with",
-            book.pages?.length || 0,
-            "pages"
-          );
-        }
-
-        setBook(book);
-        resolve(book);
-      } catch (e) {
-        console.error("Error in fetchBook:", e);
-        return reject(e);
-      }
-    });
-  };
-
   const download = async () => {
-    console.log("Download clicked");
+    console.log('Download clicked');
 
     if (!book?.url) {
-      console.log("No book URL for download");
+      console.log('No book URL for download');
       return;
     }
 
@@ -121,23 +78,23 @@ function Popup() {
 
     try {
       await createPDF(book, setProgress, addLog, setError);
-      console.log("PDF created successfully");
-    } catch (e: any) {
-      console.error("Download error:", e);
-      setError(e.message || "Unknown error");
+      console.log('PDF created successfully');
+    } catch (e: unknown) {
+      console.error('Download error:', e);
+      setError(e instanceof Error ? e.message : 'Unknown error');
     }
   };
 
   const reset = async () => {
-    console.log("Reset clicked");
+    console.log('Reset clicked');
 
     if (!book?.url) {
-      console.log("No book URL for reset");
+      console.log('No book URL for reset');
       return;
     }
 
-    const message: Messages.ClearBook = {
-      action: "ClearBook",
+    const message: ClearBook = {
+      action: 'ClearBook',
       bookURL: book.url,
     };
 
@@ -151,40 +108,44 @@ function Popup() {
 
       await fetchBook();
     } catch (e) {
-      console.error("Reset error:", e);
+      console.error('Reset error:', e);
     }
   };
 
-  const updatePageOrder = async (oldIndex: number, newIndex: number) => {
-    console.log("Updating page order:", oldIndex, "->", newIndex);
+  const updatePageOrder = (oldIndex: number, newIndex: number): void => {
+    console.log('Updating page order:', oldIndex, '->', newIndex);
 
-    if (!book?.url) return;
+    if (!book?.url) {
+      return;
+    }
 
-    const message: Messages.UpdatePageOrder = {
-      action: "UpdatePageOrder",
+    const message: UpdatePageOrder = {
+      action: 'UpdatePageOrder',
       bookURL: book.url,
       oldIndex,
       newIndex,
       numPages: 1,
     };
 
-    return await chrome.runtime.sendMessage(message, fetchBook);
+    return chrome.runtime.sendMessage(message, () => void fetchBook());
   };
 
   const deletePage = async (pageIndex: number) => {
-    console.log("Deleting page at index:", pageIndex);
+    console.log('Deleting page at index:', pageIndex);
 
-    if (!book?.url) return;
+    if (!book?.url) {
+      return;
+    }
 
     // Create a new book object with the page removed
-    const updatedPages = [...book.pages];
+    const updatedPages = [...(book.pages ?? [])];
     updatedPages.splice(pageIndex, 1);
 
     const updatedBook = { ...book, pages: updatedPages };
 
     // Save the updated book
-    const message: Messages.SaveBook = {
-      action: "SaveBook",
+    const message: SaveBook = {
+      action: 'SaveBook',
       book: updatedBook,
     };
 
@@ -192,17 +153,14 @@ function Popup() {
       await chrome.runtime.sendMessage(message);
       setBook(updatedBook);
     } catch (e) {
-      console.error("Delete page error:", e);
+      console.error('Delete page error:', e);
     }
   };
 
-  console.log("Rendering popup with book:", book);
+  console.log('Rendering popup with book:', book);
 
   // Filter out only actual image pages for display
-  const imagePages =
-    book?.pages?.filter(
-      (url) => url.includes("/docImage.action") && url.includes("encrypted=")
-    ) || [];
+  const imagePages = book?.pages?.filter((url) => url.includes('/docImage.action') && url.includes('encrypted=')) || [];
 
   return (
     <Box
@@ -234,25 +192,22 @@ function Popup() {
 
             <HStack gap={2} width="100%">
               <Button
-                onClick={download}
+                onClick={() => void download()}
                 colorPalette="blue"
                 size="md"
                 flex={1}
                 disabled={imagePages.length === 0}
                 bg="blue.500"
                 color="white"
-                _hover={{ bg: "blue.600" }}
-                _disabled={{ bg: "gray.300", color: "gray.500" }}
+                _hover={{ bg: 'blue.600' }}
+                _disabled={{ bg: 'gray.300', color: 'gray.500' }}
               >
                 Download PDF ({imagePages.length} images)
               </Button>
-              <ResetButton reset={reset}>Reset</ResetButton>
+              <ResetButton reset={() => void reset()}>Reset</ResetButton>
             </HStack>
 
-            <Checkbox
-              checked={displayPages}
-              onChange={() => toggleDisplayPages()}
-            >
+            <Checkbox checked={displayPages} onChange={() => toggleDisplayPages()}>
               Show captured pages
             </Checkbox>
 
@@ -261,30 +216,12 @@ function Popup() {
                 <Text fontSize="sm" fontWeight="medium">
                   Progress: {progress}%
                 </Text>
-                <Box
-                  height="8px"
-                  bg="gray.200"
-                  borderRadius="md"
-                  overflow="hidden"
-                  mt={1}
-                  mb={3}
-                >
-                  <Box
-                    height="8px"
-                    width={`${progress}%`}
-                    bg="blue.500"
-                    transition="width 0.3s ease"
-                  />
+                <Box height="8px" bg="gray.200" borderRadius="md" overflow="hidden" mt={1} mb={3}>
+                  <Box height="8px" width={`${progress}%`} bg="blue.500" transition="width 0.3s ease" />
                 </Box>
 
                 {error && (
-                  <Box
-                    bg="red.100"
-                    border="1px solid red"
-                    p={2}
-                    borderRadius="md"
-                    mb={2}
-                  >
+                  <Box bg="red.100" border="1px solid red" p={2} borderRadius="md" mb={2}>
                     <Text fontSize="sm" color="red.700">
                       {error}
                     </Text>
@@ -331,17 +268,9 @@ function Popup() {
                       key={url}
                       url={url}
                       index={index}
-                      moveUp={
-                        index > 0
-                          ? () => updatePageOrder(index, index - 1)
-                          : undefined
-                      }
-                      moveDown={
-                        index < imagePages.length - 1
-                          ? () => updatePageOrder(index, index + 1)
-                          : undefined
-                      }
-                      deletePage={() => deletePage(index)}
+                      moveUp={index > 0 ? () => updatePageOrder(index, index - 1) : undefined}
+                      moveDown={index < imagePages.length - 1 ? () => updatePageOrder(index, index + 1) : undefined}
+                      deletePage={() => void deletePage(index)}
                     />
                   ))}
                 </VStack>
@@ -360,13 +289,55 @@ function Popup() {
         )}
       </VStack>
       <Box mt={4} textAlign="center" fontSize="xs" color="gray.500">
-  Version: {__APP_VERSION__} |{" "}
-  <a href="https://github.com/janbaykara/ebook-scraper" target="_blank" rel="noreferrer" style={{ color: "blue" }}>
-    GitHub
-  </a>
-</Box>
+        Version: {__APP_VERSION__} |{' '}
+        <a
+          href="https://github.com/janbaykara/ebook-scraper"
+          target="_blank"
+          rel="noreferrer"
+          style={{ color: 'blue' }}
+        >
+          GitHub
+        </a>
+      </Box>
     </Box>
   );
-}
+};
 
-export default Popup;
+async function fetchBook(): Promise<Book> {
+  console.log('fetchBook called');
+
+  try {
+    const _url = await getURL();
+    console.log('Got URL:', _url);
+
+    if (!_url) {
+      console.log('No URL available');
+      throw new Error("Couldn't get URL for this book");
+    }
+
+    const url = getBookURL(_url);
+    console.log('Book URL:', url);
+
+    if (!url) {
+      console.log('Could not generate book URL');
+      throw new Error('Could not get book URL');
+    }
+
+    let book = await getBook(url);
+    console.log('Got book:', book);
+
+    if (!book) {
+      console.log('No book found, creating new one');
+      book = { url, pages: [] };
+      const message: SaveBook = { action: 'SaveBook', book };
+      await chrome.runtime.sendMessage(message);
+    } else {
+      console.log('Received existing book with', book.pages?.length || 0, 'pages');
+    }
+
+    return book;
+  } catch (e) {
+    console.error('Error in fetchBook:', e);
+    throw e;
+  }
+}

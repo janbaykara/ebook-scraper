@@ -1,14 +1,13 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
-import { manifestTransformPlugin } from './src/manifest/plugin'
-import {version} from './package.json'
+import { resolve } from 'path';
+
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+import { version } from './package.json';
+import { manifestTransformPlugin } from './src/manifest/plugin';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    manifestTransformPlugin(),
-  ],
+  plugins: [react(), manifestTransformPlugin()],
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
@@ -23,9 +22,9 @@ export default defineConfig({
         entryFileNames: 'js/[name].js',
         chunkFileNames: '[name].js',
         assetFileNames: '[name][extname]',
-      }
+      },
     },
     outDir: 'dist',
-    sourcemap: true
-  }
-})
+    sourcemap: true,
+  },
+});

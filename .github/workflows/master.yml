@@ -1,0 +1,40 @@
+name: Build, Lint, Test
+run-name: Ensure the code is building, linting, and testing correctly
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build 🏗️
+        shell: bash
+        run: npm run build
+
+      - name: Lint 🔎
+        shell: bash
+        run: npm run lint
+
+      - name: Test 🧪
+        shell: bash
+        run: npm run test
