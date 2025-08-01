@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef} from "react";
 import {
   Box,
   VStack,
@@ -11,11 +11,22 @@ import { Page, ResetButton, Checkbox } from "./Components";
 import { createPDF } from "./pdf";
 import { getURL, getBookURL, getBook } from "../common/utils";
 
+declare const __APP_VERSION__: string;
+
 function Popup() {
   console.log("Popup component rendering...");
 
   const [displayPages, setDisplayPages] = useState<boolean>(false);
   const [book, setBook] = useState<Book | undefined>(undefined);
+  const [progress, setProgress] = useState<number>(0);
+  const [log, setLog] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const addLog = (msg: string) => {
+    setLog((prev) => [...prev, msg]);
+  };
+
+  const logEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     console.log("Popup useEffect running...");
@@ -29,14 +40,21 @@ function Popup() {
     chrome.runtime.onMessage.addListener((request: ScraperMessage) => {
       console.log("Popup received message:", request);
 
-      let isResponseAsync = false;
-      if (request.action === "BookWasUpdated") {
-        setBook(request.book || undefined);
-        console.log("Book updated from message");
+        let isResponseAsync = false;
+        if (request.action === "BookWasUpdated") {
+          setBook(request.book || undefined);
+          console.log("Book updated from message");
+        }
+        return isResponseAsync;
       }
-      return isResponseAsync;
-    });
+    );
   }, []);
+
+  useEffect(() => {
+    if (logEndRef.current) {
+      logEndRef.current.scrollTop = logEndRef.current.scrollHeight;
+    }
+  }, [log]);
 
   const toggleDisplayPages = (_displayPages = !displayPages) => {
     console.log("Toggling display pages:", _displayPages);
@@ -73,7 +91,11 @@ function Popup() {
           const message: Messages.SaveBook = { action: "SaveBook", book };
           chrome.runtime.sendMessage(message);
         } else {
-          console.log("Received existing book with", book.pages?.length || 0, "pages");
+          console.log(
+            "Received existing book with",
+            book.pages?.length || 0,
+            "pages"
+          );
         }
 
         setBook(book);
@@ -93,11 +115,16 @@ function Popup() {
       return;
     }
 
+    setProgress(0);
+    setLog([]);
+    setError(null);
+
     try {
-      await createPDF(book);
+      await createPDF(book, setProgress, addLog, setError);
       console.log("PDF created successfully");
-    } catch (e) {
+    } catch (e: any) {
       console.error("Download error:", e);
+      setError(e.message || "Unknown error");
     }
   };
 
@@ -111,11 +138,17 @@ function Popup() {
 
     const message: Messages.ClearBook = {
       action: "ClearBook",
-      bookURL: book.url
+      bookURL: book.url,
     };
 
     try {
       await chrome.runtime.sendMessage(message);
+
+      setBook(undefined);
+      setLog([]);
+      setProgress(0);
+      setError(null);
+
       await fetchBook();
     } catch (e) {
       console.error("Reset error:", e);
@@ -132,7 +165,7 @@ function Popup() {
       bookURL: book.url,
       oldIndex,
       newIndex,
-      numPages: 1
+      numPages: 1,
     };
 
     return await chrome.runtime.sendMessage(message, fetchBook);
@@ -152,7 +185,7 @@ function Popup() {
     // Save the updated book
     const message: Messages.SaveBook = {
       action: "SaveBook",
-      book: updatedBook
+      book: updatedBook,
     };
 
     try {
@@ -166,9 +199,10 @@ function Popup() {
   console.log("Rendering popup with book:", book);
 
   // Filter out only actual image pages for display
-  const imagePages = book?.pages?.filter(url =>
-    url.includes('/docImage.action') && url.includes('encrypted=')
-  ) || [];
+  const imagePages =
+    book?.pages?.filter(
+      (url) => url.includes("/docImage.action") && url.includes("encrypted=")
+    ) || [];
 
   return (
     <Box
@@ -212,9 +246,7 @@ function Popup() {
               >
                 Download PDF ({imagePages.length} images)
               </Button>
-              <ResetButton reset={reset}>
-                Reset
-              </ResetButton>
+              <ResetButton reset={reset}>Reset</ResetButton>
             </HStack>
 
             <Checkbox
@@ -223,6 +255,60 @@ function Popup() {
             >
               Show captured pages
             </Checkbox>
+
+            {imagePages.length > 0 && (
+              <Box width="100%" mt={4}>
+                <Text fontSize="sm" fontWeight="medium">
+                  Progress: {progress}%
+                </Text>
+                <Box
+                  height="8px"
+                  bg="gray.200"
+                  borderRadius="md"
+                  overflow="hidden"
+                  mt={1}
+                  mb={3}
+                >
+                  <Box
+                    height="8px"
+                    width={`${progress}%`}
+                    bg="blue.500"
+                    transition="width 0.3s ease"
+                  />
+                </Box>
+
+                {error && (
+                  <Box
+                    bg="red.100"
+                    border="1px solid red"
+                    p={2}
+                    borderRadius="md"
+                    mb={2}
+                  >
+                    <Text fontSize="sm" color="red.700">
+                      {error}
+                    </Text>
+                  </Box>
+                )}
+
+                <Box
+                  ref={logEndRef}
+                  height="120px"
+                  overflowY="auto"
+                  p={2}
+                  border="1px solid"
+                  borderColor="gray.300"
+                  borderRadius="md"
+                  bg="gray.50"
+                  fontSize="xs"
+                  fontFamily="monospace"
+                >
+                  {log.map((line, idx) => (
+                    <Text key={idx}>{line}</Text>
+                  ))}
+                </Box>
+              </Box>
+            )}
 
             {displayPages && (
               <Box width="100%">
@@ -245,8 +331,16 @@ function Popup() {
                       key={url}
                       url={url}
                       index={index}
-                      moveUp={index > 0 ? () => updatePageOrder(index, index - 1) : undefined}
-                      moveDown={index < imagePages.length - 1 ? () => updatePageOrder(index, index + 1) : undefined}
+                      moveUp={
+                        index > 0
+                          ? () => updatePageOrder(index, index - 1)
+                          : undefined
+                      }
+                      moveDown={
+                        index < imagePages.length - 1
+                          ? () => updatePageOrder(index, index + 1)
+                          : undefined
+                      }
                       deletePage={() => deletePage(index)}
                     />
                   ))}
@@ -265,6 +359,12 @@ function Popup() {
           </VStack>
         )}
       </VStack>
+      <Box mt={4} textAlign="center" fontSize="xs" color="gray.500">
+  Version: {__APP_VERSION__} |{" "}
+  <a href="https://github.com/janbaykara/ebook-scraper" target="_blank" rel="noreferrer" style={{ color: "blue" }}>
+    GitHub
+  </a>
+</Box>
     </Box>
   );
 }
