@@ -1,6 +1,6 @@
 {
   "name": "ebook-scraper",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Save eBook pages as a PDF",
   "type": "module",
   "engines": {

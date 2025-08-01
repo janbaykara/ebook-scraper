@@ -62,6 +62,8 @@ A Chrome extension that compiles PDFs while reading ebooks from supported academ
 
 ### Usage
 
+![Screenshot](screenshot2.png)
+
 1. Navigate to a supported ebook platform (ProQuest, JStor, Dawsonera)
 2. Open an ebook you want to scrape
 3. Click the eBook Scraper extension icon in your toolbar
