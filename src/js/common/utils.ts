@@ -1,9 +1,13 @@
-import sites from "./sites";
+import type { Book, LocalStorageData } from '../types';
+
+import sites from './sites';
 
 export function getActiveTab(): Promise<false | chrome.tabs.Tab> {
-  return new Promise(resolve => {
-    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-      if (!tabs.length) return resolve(false);
+  return new Promise((resolve) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (!tabs.length) {
+        return resolve(false);
+      }
       return resolve(tabs[0]);
     });
   });
@@ -15,7 +19,7 @@ export async function getURL(): Promise<false | URL> {
 }
 
 export function getBookURL(url: URL): string | undefined {
-  const site = sites.find(site => site.host === url.host);
+  const site = sites.find((site) => site.host === url.host);
 
   if (site) {
     return site.constructBookURL(url);
@@ -28,21 +32,21 @@ export function getBookURL(url: URL): string | undefined {
  * @param path
  */
 export function extractPageImageURL(
-  request: chrome.webRequest.WebRequestBodyDetails | chrome.webRequest.WebResponseCacheDetails
-): Promise<string | null> {
+  request: chrome.webRequest.WebRequestBodyDetails | chrome.webRequest.WebResponseCacheDetails,
+): string | null {
   const url = new URL(request.url);
 
-  const site = sites.find(site => site.testPageImageURL(request, url));
+  const site = sites.find((site) => site.testPageImageURL(request, url));
 
   if (site) {
     return site.getPageImageURL(url);
   }
 
-  return Promise.resolve(null);
+  return null;
 }
 
 export const getBook = (url: string): Promise<Book | null> =>
-  new Promise(resolve => {
+  new Promise((resolve) => {
     chrome.storage.local.get(url, (store?: LocalStorageData) => {
       const book = store?.[url];
       if (book) {
@@ -52,17 +56,24 @@ export const getBook = (url: string): Promise<Book | null> =>
     });
   });
 
-export function fetchAsBlob(path: string): Promise<string> {
-  return new Promise(resolve => {
-    fetch(path)
-      .then(res => res.blob())
-      .then(blob => {
-        var a = new FileReader();
-        a.onload = e => {
-          resolve((e.target as any).result as string);
-        };
-        a.readAsDataURL(blob);
-      });
+export async function fetchAsBlob(path: string): Promise<string> {
+  const res = await fetch(path);
+  const blob = await res.blob();
+  const reader = new FileReader();
+  return await new Promise<string>((resolve) => {
+    reader.onload = (event) => {
+      let result = event.target?.result;
+      if (typeof result !== 'string') {
+        console.warn('FileReader result is not a string, performing cast', result);
+        result = result ? JSON.stringify(result) : '';
+      }
+      resolve(result);
+    };
+    reader.onerror = (error) => {
+      console.error('FileReader error:', error);
+      resolve('');
+    };
+    reader.readAsDataURL(blob);
   });
 }
 
@@ -72,7 +83,7 @@ export function fetchAsBlob(path: string): Promise<string> {
  * @param to Finishing index
  * @param on How many elements to move from 'from' (starting index)
  */
-export function move<T extends any[]>(array: T, from: number, to: number, on = 1) {
+export function move<T extends string[]>(array: T, from: number, to: number, on = 1): T {
   array.splice(to, 0, ...array.splice(from, on));
   return array;
 }

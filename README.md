@@ -1,5 +1,8 @@
 # eBook Scraper
 
+![Build Status](https://github.com/janbaykara/ebook-scraper/actions/workflows/master.yml/badge.svg)
+
+
 A Chrome extension that compiles PDFs while reading ebooks from supported academic platforms.
 
 ![Screenshot](screenshot.png)
