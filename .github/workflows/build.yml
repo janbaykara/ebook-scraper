@@ -1,11 +1,7 @@
 name: Build, Lint, Test
-run-name: Ensure the code is building, linting, and testing correctly
 
 on:
-  push:
-    branches:
-      - master
-      - main
+  push
 
 jobs:
   build:
