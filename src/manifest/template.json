@@ -19,13 +19,9 @@
     "48": "icon-48.png",
     "16": "icon-16.png"
   },
-  "permissions": [
-    "tabs",
-    "declarativeContent",
-    "storage",
-    "unlimitedStorage",
-    "downloads",
-    "webRequest"
-  ],
+  "permissions": ["tabs", "declarativeContent", "storage", "unlimitedStorage", "webRequest"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "host_permissions": []
 }
