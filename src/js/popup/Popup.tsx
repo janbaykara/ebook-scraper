@@ -188,6 +188,16 @@ export const Popup: FC = () => {
               <Text fontSize="sm" color="gray.600">
                 Valid images: {imagePages.length}
               </Text>
+              <Text>
+                Use in a fullscreen window with pages zoomed for best quality.{' '}
+                <a
+                  href="https://github.com/janbaykara/ebook-scraper?tab=readme-ov-file#usage"
+                  target="_blank"
+                  rel="noreferrer" style={{ color: 'blue' }}
+                >
+                  More instructions here.
+                </a>
+              </Text>
             </Box>
 
             <HStack gap={2} width="100%">

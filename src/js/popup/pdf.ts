@@ -1,14 +1,32 @@
-import { jsPDF } from 'jspdf';
-
 import { fetchAsBlob, getActiveTab } from '../common/utils';
 import type { Book } from '../types';
+
+function loadJsPDF(): Promise<any> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).jspdf?.jsPDF) {
+      return resolve((window as any).jspdf.jsPDF);
+    }
+    const script = document.createElement('script');
+    script.src = '/jspdf.umd.min.js';
+    script.onload = () => {
+      if ((window as any).jspdf?.jsPDF) {
+        resolve((window as any).jspdf.jsPDF);
+      } else {
+        reject(new Error('jsPDF not found after script load'));
+      }
+    };
+    script.onerror = () => reject(new Error('Failed to load jsPDF script'));
+    document.head.appendChild(script);
+  });
+}
 
 export async function createPDF(
   book: Book,
   onProgress?: (percent: number) => void,
   onLog?: (msg: string) => void,
   onError?: (err: string) => void,
-): Promise<jsPDF> {
+): Promise<InstanceType<typeof jsPDF>> {
+  const jsPDF = await loadJsPDF();
   try {
     if (!book.pages || book.pages.length === 0) {
       const err = 'No pages to create PDF';
@@ -40,6 +58,9 @@ export async function createPDF(
         img.src = blobURI;
 
         await new Promise<void>((imgLoadResolve) => {
+
+          let lastBlobUrl: string | null = null;
+
           img.onload = () => {
             const imgWidth = img.width;
             const imgHeight = img.height;
@@ -61,8 +82,11 @@ export async function createPDF(
             pdf.addImage(img, 'JPEG', 0, 0, scaledWidth, scaledHeight);
 
             //Free blobs after images are added to prevent memory overload
-            URL.revokeObjectURL(img.src);
-            img.src = '';
+            //Queue last cycle's blob otherwise errors are thrown
+            if (lastBlobUrl) {
+              URL.revokeObjectURL(lastBlobUrl);
+            }
+            lastBlobUrl = img.src;
 
             imgLoadResolve();
           };

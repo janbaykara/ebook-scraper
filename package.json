@@ -1,6 +1,6 @@
 {
   "name": "ebook-scraper",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Save eBook pages as a PDF",
   "type": "module",
   "engines": {
@@ -24,7 +24,6 @@
     "@chakra-ui/react": "^3.24.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "jspdf": "^3.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
