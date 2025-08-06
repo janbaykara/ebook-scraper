@@ -1,6 +1,7 @@
 import { fetchAsBlob, getActiveTab } from '../common/utils';
 import type { Book } from '../types';
 
+//Load local jsPDF
 function loadJsPDF(): Promise<any> {
   return new Promise((resolve, reject) => {
     if ((window as any).jspdf?.jsPDF) {
