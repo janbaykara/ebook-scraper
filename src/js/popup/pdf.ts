@@ -1,33 +1,14 @@
+import { jsPDF } from 'jspdf';
+
 import { fetchAsBlob, getActiveTab } from '../common/utils';
 import type { Book } from '../types';
-
-//Load local jsPDF
-function loadJsPDF(): Promise<any> {
-  return new Promise((resolve, reject) => {
-    if ((window as any).jspdf?.jsPDF) {
-      return resolve((window as any).jspdf.jsPDF);
-    }
-    const script = document.createElement('script');
-    script.src = '/jspdf.umd.min.js';
-    script.onload = () => {
-      if ((window as any).jspdf?.jsPDF) {
-        resolve((window as any).jspdf.jsPDF);
-      } else {
-        reject(new Error('jsPDF not found after script load'));
-      }
-    };
-    script.onerror = () => reject(new Error('Failed to load jsPDF script'));
-    document.head.appendChild(script);
-  });
-}
 
 export async function createPDF(
   book: Book,
   onProgress?: (percent: number) => void,
   onLog?: (msg: string) => void,
   onError?: (err: string) => void,
-): Promise<InstanceType<typeof jsPDF>> {
-  const jsPDF = await loadJsPDF();
+): Promise<jsPDF> {
   try {
     if (!book.pages || book.pages.length === 0) {
       const err = 'No pages to create PDF';
@@ -59,7 +40,6 @@ export async function createPDF(
         img.src = blobURI;
 
         await new Promise<void>((imgLoadResolve) => {
-
           let lastBlobUrl: string | null = null;
 
           img.onload = () => {
