@@ -1,7 +1,8 @@
 name: Build, Lint, Test
 
 on:
-  push
+  push:
+  pull_request:
 
 jobs:
   build:
@@ -21,7 +22,7 @@ jobs:
           node-version: "22"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build 🏗️
         shell: bash

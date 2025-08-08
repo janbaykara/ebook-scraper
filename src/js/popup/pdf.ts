@@ -40,6 +40,8 @@ export async function createPDF(
         img.src = blobURI;
 
         await new Promise<void>((imgLoadResolve) => {
+          let lastBlobUrl: string | null = null;
+
           img.onload = () => {
             const imgWidth = img.width;
             const imgHeight = img.height;
@@ -61,8 +63,11 @@ export async function createPDF(
             pdf.addImage(img, 'JPEG', 0, 0, scaledWidth, scaledHeight);
 
             //Free blobs after images are added to prevent memory overload
-            URL.revokeObjectURL(img.src);
-            img.src = '';
+            //Queue last cycle's blob otherwise errors are thrown
+            if (lastBlobUrl) {
+              URL.revokeObjectURL(lastBlobUrl);
+            }
+            lastBlobUrl = img.src;
 
             imgLoadResolve();
           };

@@ -5,9 +5,10 @@ import { defineConfig } from 'vite';
 
 import { version } from './package.json';
 import { manifestTransformPlugin } from './src/manifest/plugin';
+import { stripCdnPlugin } from './src/stripCdnPlugin';
 
 export default defineConfig({
-  plugins: [react(), manifestTransformPlugin()],
+  plugins: [react(), manifestTransformPlugin(), stripCdnPlugin()],
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
