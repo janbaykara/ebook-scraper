@@ -193,7 +193,8 @@ export const Popup: FC = () => {
                 <a
                   href="https://github.com/janbaykara/ebook-scraper?tab=readme-ov-file#usage"
                   target="_blank"
-                  rel="noreferrer" style={{ color: 'blue' }}
+                  rel="noreferrer"
+                  style={{ color: 'blue' }}
                 >
                   More instructions here.
                 </a>
