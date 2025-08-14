@@ -2,13 +2,19 @@ import { resolve } from 'path';
 
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import zip from 'vite-plugin-zip-pack';
 
 import { version } from './package.json';
 import { manifestTransformPlugin } from './src/manifest/plugin';
 import { stripCdnPlugin } from './src/stripCdnPlugin';
 
 export default defineConfig({
-  plugins: [react(), manifestTransformPlugin(), stripCdnPlugin()],
+  plugins: [
+    react(),
+    manifestTransformPlugin(),
+    stripCdnPlugin(),
+    zip({ outDir: 'release', outFileName: 'release.zip' }),
+  ],
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },

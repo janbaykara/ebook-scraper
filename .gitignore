@@ -65,3 +65,5 @@ typings/
 
 # project specific
 dist
+
+release/
