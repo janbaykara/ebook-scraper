@@ -1,32 +1,34 @@
 # eBook Scraper
 
-![Build Status](https://github.com/janbaykara/ebook-scraper/actions/workflows/master.yml/badge.svg)
+A Chrome extension to help you create PDFs from ebooks hosted on supported academic platforms. It currently supports:
 
+- JStor
+- Ebook Central by ProQuest
 
-A Chrome extension that compiles PDFs while reading ebooks from supported academic platforms.
+<a href="https://chromewebstore.google.com/detail/ebook-scraper/bhoifjhgahfmjkonopmmfifdfjacjeak?authuser=1&hl=en-GB">
+<img src="https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png?_gl=1*7fpowy*_up*MQ..*_ga*MTQ4Njk1MDczNy4xNzU1MjEyNTc0*_ga_H1Y3PXZW9Q*czE3NTUyMTI1NzMkbzEkZzAkdDE3NTUyMTI1NzMkajYwJGwwJGgw" title="Available in the Chrome Web Store" />
+</a>
 
 ![Screenshot](screenshot.png)
 
-## Features
+### Usage
 
-- Compile PDFs while reading ebooks
-- Support for multiple academic platforms
-- Built atop this solid [Chrome extension foundation](https://github.com/martellaj/chrome-extension-react-typescript-boilerplate)
+1. Navigate to a supported ebook platform (ProQuest, JStor)
+2. Open an ebook you want to scrape
+3. Click through each page as they load to capture images
+4. Click the eBook Scraper extension icon in your toolbar
+5. Use the popup interface to save pages and compile your PDF
 
-## Supported source sites
+![Screenshot](screenshot2.png)
 
-- ProQuest
-- JStor
-- Dawsonera
-
-## Installation & Setup
+## Developer instructions
+![Build Status](https://github.com/janbaykara/ebook-scraper/actions/workflows/build.yml/badge.svg)
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/)
-- [Google Chrome](https://www.google.com/chrome/)
+- Install [Node.js](https://nodejs.org/). Recommend https://github.com/nvm-sh/nvm
 
-### Installation
+### Prepare the local environment
 
 1. **Clone the repository**
    ```bash
@@ -44,7 +46,7 @@ A Chrome extension that compiles PDFs while reading ebooks from supported academ
    npm run build
    ```
 
-### Loading the Extension in Chrome
+### Load the extension in Chrome
 
 1. **Open Chrome Extensions page**
    - Navigate to `chrome://extensions/` in your Chrome browser
@@ -62,16 +64,6 @@ A Chrome extension that compiles PDFs while reading ebooks from supported academ
    - You should see "eBook Scraper" in your extensions list
    - The extension icon should appear in your Chrome toolbar
    - Check that the extension shows as "Active"
-
-### Usage
-
-![Screenshot](screenshot2.png)
-
-1. Navigate to a supported ebook platform (ProQuest, JStor, Dawsonera)
-2. Open an ebook you want to scrape
-3. Click through each page as they load to capture images
-4. Click the eBook Scraper extension icon in your toolbar
-5. Use the popup interface to save pages and compile your PDF
 
 ## Development
 
@@ -99,7 +91,7 @@ ebook-scraper/
 ├── src/                        # Source code
 │   ├── js/                     # TypeScript/JavaScript files
 │   │   ├── common/             # Shared utilities
-│   │   │   ├── sites.ts        # Site configurations for ProQuest, JStor, Dawsonera
+│   │   │   ├── sites.ts        # Site configurations
 │   │   │   └── utils.ts        # Helper functions
 │   │   ├── eventPage/          # Background script
 │   │   │   ├── actions.ts      # Extension actions (save, delete, etc.)
@@ -123,4 +115,6 @@ ebook-scraper/
 
 ## Contributing
 
-This project welcomes contributions! Please see the [discussions page](https://github.com/janbaykara/ebook-scraper/discussions/12) if you'd like to help maintain this repository.
+This project welcomes contributions!
+
+Please see the [discussions page](https://github.com/janbaykara/ebook-scraper/discussions/12) if you'd like to help maintain this repository.
