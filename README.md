@@ -26,7 +26,7 @@ A Chrome extension to help you create PDFs from ebooks hosted on supported acade
 
 ### Prerequisites
 
-- Install [Node.js](https://nodejs.org/). Recommend https://github.com/nvm-sh/nvm
+- Install [Node.js](https://nodejs.org/). Recommend installing with [FNM](https://github.com/Schniz/fnm)
 
 ### Prepare the local environment
 
