@@ -76,6 +76,36 @@ const sites: SiteConfig[] = [
     },
   },
   {
+    name: 'ProQuest Ebook Central (Binghamton Proxy)',
+    chromeURLScope: '*://ebookcentral-proquest-com.proxy.binghamton.edu/*',
+    host: 'ebookcentral-proquest-com.proxy.binghamton.edu',
+    readerDomain: { hostContains: 'ebookcentral-proquest-com.proxy.binghamton.edu' },
+    constructBookURL: (url: URL) => {
+      // For ProQuest Ebook Central, the book URL structure is different
+      if (url.pathname.includes('/docview/')) {
+        const pathMatch = url.pathname.match(/\/docview\/(\d+)/);
+        if (pathMatch) {
+          return `proquest.com/docview/${pathMatch[1]}`;
+        }
+      }
+
+      // Fallback to the default behavior
+      return url.host + url.pathname;
+    },
+    pageResourceURLFilter: '*://ebookcentral-proquest-com.proxy.binghamton.edu/*/docImage.action*',
+    testPageImageURL: (_request, url) => {
+      return (
+        url.hostname === 'ebookcentral-proquest-com.proxy.binghamton.edu' &&
+        url.pathname.includes('/docImage.action') &&
+        url.searchParams.has('encrypted')
+      );
+    },
+    getPageImageURL: (url: URL) => {
+      // Return the image URL directly
+      return url.href;
+    },
+  },
+  {
     name: 'ProQuest Ebook Central',
     chromeURLScope: '*://*.proquest.com/*',
     host: 'ebookcentral.proquest.com',
