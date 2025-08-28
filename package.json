@@ -1,6 +1,6 @@
 {
   "name": "ebook-scraper",
-  "version": "1.3.1",
+  "version": "2.0.0",
   "description": "Save eBook pages as a PDF",
   "type": "module",
   "engines": {
@@ -8,12 +8,17 @@
     "npm": ">=10.9.2 <11"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "compile": "tsc --noEmit",
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
     "format": "npm run lint -- --fix",
     "lint": "eslint --config eslint.config.mjs --max-warnings=0 .",
     "lint:tsc": "tsc --noEmit",
-    "preview": "vite preview",
+    "postinstall": "wxt prepare",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
     "test": "vitest",
     "test:watch": "vitest --watch"
   },
@@ -25,17 +30,16 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "jspdf": "^3.0.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "vite-plugin-zip-pack": "^1.2.4"
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@eslint/js": "9.32.0",
     "@types/chrome": "^0.0.246",
     "@types/node": "^22.17.0",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
-    "@vitejs/plugin-react": "^4.7.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.3",
+    "@wxt-dev/module-react": "^1.1.3",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "9.32.0",
     "eslint-config-prettier": "^10.1.8",
@@ -44,9 +48,9 @@
     "eslint-plugin-prettier": "^5.5.3",
     "eslint-plugin-unused-imports": "^4.1.4",
     "prettier": "^3.6.2",
-    "typescript": "^5.3.3",
+    "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
-    "vite": "^7.0.6",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "wxt": "^0.20.6"
   }
 }

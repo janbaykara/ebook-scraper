@@ -63,11 +63,15 @@ export default [
       // compiled / generated output
       'dist',
       'build',
+      '.output',
       '**/generated',
       // test coverage output
       'coverage',
       // binary scripts
       'bin',
+      // wxt configs
+      '.wxt/**/*.d.ts',
+      '.wxt/eslint-auto-imports.mjs',
     ],
   },
   {
@@ -76,5 +80,11 @@ export default [
      */
     files: ['*.mjs', 'dist/**'],
     ...tsEslint.configs.disableTypeChecked,
+  },
+  {
+    files: ['**/*.d.ts'],
+    rules: {
+      '@typescript-eslint/triple-slash-reference': 'off',
+    },
   },
 ];

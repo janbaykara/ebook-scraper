@@ -1,10 +1,9 @@
-import type { Book, LocalStorageData } from '../types';
-
 import sites from './sites';
+import type { Book, LocalStorageData } from './types';
 
-export function getActiveTab(): Promise<false | chrome.tabs.Tab> {
+export function getActiveTab(): Promise<false | Browser.tabs.Tab> {
   return new Promise((resolve) => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (!tabs.length) {
         return resolve(false);
       }
@@ -31,9 +30,7 @@ export function getBookURL(url: URL): string | undefined {
  * Determines whether a URL is a page image
  * @param path
  */
-export function extractPageImageURL(
-  request: chrome.webRequest.WebRequestBodyDetails | chrome.webRequest.WebResponseCacheDetails,
-): string | null {
+export function extractPageImageURL(request: Browser.webRequest.WebRequestDetails): string | null {
   const url = new URL(request.url);
 
   const site = sites.find((site) => site.testPageImageURL(request, url));
@@ -47,7 +44,7 @@ export function extractPageImageURL(
 
 export const getBook = (url: string): Promise<Book | null> =>
   new Promise((resolve) => {
-    chrome.storage.local.get(url, (store?: LocalStorageData) => {
+    browser.storage.local.get<LocalStorageData>(url, (store?: LocalStorageData) => {
       const book = store?.[url];
       if (book) {
         return resolve(book);

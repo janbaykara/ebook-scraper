@@ -1,4 +1,3 @@
-//updated to use Chakra UI components instead of rebass
 import { Box, Flex, Image, Text, Button, VStack } from '@chakra-ui/react';
 
 type PageParams = {
