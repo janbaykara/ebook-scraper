@@ -1,3 +1,5 @@
+import process from 'node:process';
+
 import eslint from '@eslint/js';
 import importPlugin from 'eslint-plugin-import-x';
 import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
@@ -21,7 +23,7 @@ export default [
         ecmaFeatures: {
           modules: true,
         },
-        tsconfigRootDir: '.',
+        tsconfigRootDir: process.cwd(),
         projectService: true,
       },
     },
