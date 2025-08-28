@@ -2,46 +2,13 @@
 // Types for the #import virtual module
 declare module '#imports' {
   export { browser, Browser } from 'wxt/browser';
-  export {
-    storage,
-    StorageArea,
-    WxtStorage,
-    WxtStorageItem,
-    StorageItemKey,
-    StorageAreaChanges,
-    MigrationError,
-  } from 'wxt/utils/storage';
+  export { storage, StorageArea, WxtStorage, WxtStorageItem, StorageItemKey, StorageAreaChanges, MigrationError } from 'wxt/utils/storage';
   export { useAppConfig } from 'wxt/utils/app-config';
   export { ContentScriptContext, WxtWindowEventMap } from 'wxt/utils/content-script-context';
-  export {
-    createIframeUi,
-    IframeContentScriptUi,
-    IframeContentScriptUiOptions,
-  } from 'wxt/utils/content-script-ui/iframe';
-  export {
-    createIntegratedUi,
-    IntegratedContentScriptUi,
-    IntegratedContentScriptUiOptions,
-  } from 'wxt/utils/content-script-ui/integrated';
-  export {
-    createShadowRootUi,
-    ShadowRootContentScriptUi,
-    ShadowRootContentScriptUiOptions,
-  } from 'wxt/utils/content-script-ui/shadow-root';
-  export {
-    ContentScriptUi,
-    ContentScriptUiOptions,
-    ContentScriptOverlayAlignment,
-    ContentScriptAppendMode,
-    ContentScriptInlinePositioningOptions,
-    ContentScriptOverlayPositioningOptions,
-    ContentScriptModalPositioningOptions,
-    ContentScriptPositioningOptions,
-    ContentScriptAnchoredOptions,
-    AutoMountOptions,
-    StopAutoMount,
-    AutoMount,
-  } from 'wxt/utils/content-script-ui/types';
+  export { createIframeUi, IframeContentScriptUi, IframeContentScriptUiOptions } from 'wxt/utils/content-script-ui/iframe';
+  export { createIntegratedUi, IntegratedContentScriptUi, IntegratedContentScriptUiOptions } from 'wxt/utils/content-script-ui/integrated';
+  export { createShadowRootUi, ShadowRootContentScriptUi, ShadowRootContentScriptUiOptions } from 'wxt/utils/content-script-ui/shadow-root';
+  export { ContentScriptUi, ContentScriptUiOptions, ContentScriptOverlayAlignment, ContentScriptAppendMode, ContentScriptInlinePositioningOptions, ContentScriptOverlayPositioningOptions, ContentScriptModalPositioningOptions, ContentScriptPositioningOptions, ContentScriptAnchoredOptions, AutoMountOptions, StopAutoMount, AutoMount } from 'wxt/utils/content-script-ui/types';
   export { defineAppConfig, WxtAppConfig } from 'wxt/utils/define-app-config';
   export { defineBackground } from 'wxt/utils/define-background';
   export { defineContentScript } from 'wxt/utils/define-content-script';
@@ -51,35 +18,10 @@ declare module '#imports' {
   export { InvalidMatchPattern, MatchPattern } from 'wxt/utils/match-patterns';
   export { useState, useCallback, useMemo, useEffect, useRef, useContext, useReducer } from 'react';
   export { fakeBrowser } from 'wxt/testing';
-  export {
-    updatePageAction,
-    asyncUpdatePageOrder,
-    savePage,
-    saveBook,
-    deleteBook,
-    postBookUpdate,
-  } from '../components/actions';
+  export { updatePageAction, asyncUpdatePageOrder, savePage, saveBook, deleteBook, postBookUpdate } from '../components/actions';
   export { createPDF } from '../components/pdf';
   export { default as sites } from '../components/sites';
   export { stripCdnPlugin } from '../components/stripCdnPlugin';
-  export {
-    Page,
-    Book,
-    SaveBook,
-    BookWasUpdated,
-    ClearBook,
-    UpdatePageOrder,
-    ScraperMessage,
-    MessageResponse,
-    LocalStorageData,
-  } from '../components/types';
-  export {
-    getActiveTab,
-    getURL,
-    getBookURL,
-    extractPageImageURL,
-    getBook,
-    fetchAsBlob,
-    move,
-  } from '../components/utils';
+  export { Page, Book, SaveBook, BookWasUpdated, ClearBook, UpdatePageOrder, ScraperMessage, MessageResponse, LocalStorageData } from '../components/types';
+  export { getActiveTab, getURL, getBookURL, extractPageImageURL, getBook, fetchAsBlob, move } from '../components/utils';
 }

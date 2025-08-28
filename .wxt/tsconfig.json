@@ -22,9 +22,6 @@
   },
   "include": [
     "../**/*",
-    "../components",
-    "../entropoints",
-    "../*.mjs",
     "./wxt.d.ts"
   ],
   "exclude": ["../.output"]
