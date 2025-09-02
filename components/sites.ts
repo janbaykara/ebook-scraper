@@ -1,10 +1,9 @@
 type SiteConfig = {
   name: string;
   /**
-   * Allow the chrome extension to operate
-   * in this URL pattern
+   * Allow the extension to operate in this URL pattern
    */
-  chromeURLScope: string;
+  urlScope: string;
   /**
    * Matching hostname for this module
    */
@@ -27,10 +26,7 @@ type SiteConfig = {
    * Validate a type of page resource
    * as a page image
    */
-  testPageImageURL(
-    request: chrome.webRequest.WebRequestBodyDetails | chrome.webRequest.WebResponseCacheDetails,
-    url: URL,
-  ): boolean;
+  testPageImageURL(request: Browser.webRequest.WebRequestDetails, url: URL): boolean;
   /**
    * Return a page image URI
    * (reference or base64 string)
@@ -42,7 +38,7 @@ const sites: SiteConfig[] = [
   //https://www.proquest.com/docview/2837705652/bookReader?sourcetype=Books
   {
     name: 'ProQuest',
-    chromeURLScope: '*://*.proquest.com/*',
+    urlScope: '*://*.proquest.com/*',
     host: 'www.proquest.com',
     readerDomain: { hostContains: 'proquest.com' },
     constructBookURL: (url: URL) => {
@@ -77,7 +73,7 @@ const sites: SiteConfig[] = [
   },
   {
     name: 'ProQuest Ebook Central (Binghamton Proxy)',
-    chromeURLScope: '*://ebookcentral-proquest-com.proxy.binghamton.edu/*',
+    urlScope: '*://ebookcentral-proquest-com.proxy.binghamton.edu/*',
     host: 'ebookcentral-proquest-com.proxy.binghamton.edu',
     readerDomain: { hostContains: 'ebookcentral-proquest-com.proxy.binghamton.edu' },
     constructBookURL: (url: URL) => {
@@ -107,7 +103,7 @@ const sites: SiteConfig[] = [
   },
   {
     name: 'ProQuest Ebook Central',
-    chromeURLScope: '*://*.proquest.com/*',
+    urlScope: '*://*.proquest.com/*',
     host: 'ebookcentral.proquest.com',
     readerDomain: { hostContains: 'proquest.com' },
     constructBookURL: (url: URL) => {
@@ -137,7 +133,7 @@ const sites: SiteConfig[] = [
   },
   {
     name: 'JStor',
-    chromeURLScope: '*://www.jstor.org/',
+    urlScope: '*://www.jstor.org/',
     host: 'www.jstor.org',
     readerDomain: {
       urlContains: 'jstor.org/stable/',

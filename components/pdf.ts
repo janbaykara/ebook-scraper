@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 
-import { fetchAsBlob, getActiveTab } from '../common/utils';
-import type { Book } from '../types';
+import type { Book } from './types';
+import { fetchAsBlob, getActiveTab } from './utils';
 
 export async function createPDF(
   book: Book,

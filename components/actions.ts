@@ -1,5 +1,5 @@
-import { getBookURL, getURL, getBook, move, getActiveTab } from '../common/utils';
-import type { Book, BookWasUpdated, UpdatePageOrder } from '../types';
+import type { Book, BookWasUpdated, UpdatePageOrder } from './types';
+import { getBookURL, getURL, getBook, move, getActiveTab } from './utils';
 
 export const updatePageAction = async () => {
   const tab = await getActiveTab();
