@@ -6,7 +6,9 @@ import { extractPageImageURL } from '../components/utils';
 let lastURL: string | undefined;
 
 export default defineBackground(() => {
-  console.log('Hello background!', { id: browser.runtime.id });
+  // Action API is conditionally available based on manifest v2 vs v3
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const actionAPI = browser.action || browser.browserAction;
 
   // Move message listener setup to top level so it persists through service worker wake/sleep cycles
   browser.runtime.onMessage.addListener((request: ScraperMessage, _sender, sendResponse) => {
@@ -42,23 +44,29 @@ export default defineBackground(() => {
       console.error('Error updating page action:', e);
     });
 
-    browser.declarativeContent.onPageChanged.removeRules(undefined, () => {
-      browser.declarativeContent.onPageChanged.addRules([
-        {
-          conditions: [
-            ...sites.map(
-              (site) =>
-                new browser.declarativeContent.PageStateMatcher({
-                  pageUrl: site.readerDomain,
-                }),
-            ),
-          ],
-          actions: [new browser.declarativeContent.ShowAction()],
-        },
-      ]);
+    browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+      if (changeInfo.status === 'complete' && tab.url) {
+        const url = new URL(tab.url);
+        const enabledSites = new Set(
+          sites.map((site) =>
+            typeof site.readerDomain === 'string'
+              ? site.readerDomain
+              : site.readerDomain.hostEquals || site.readerDomain.hostContains,
+          ),
+        );
+        const shouldShow =
+          enabledSites.has(url.hostname) ||
+          Array.from(enabledSites).some((domain) => domain && url.hostname.includes(domain));
+
+        if (shouldShow) {
+          actionAPI.enable(tabId).catch((e) => console.error('Error enabling action', e));
+        } else {
+          actionAPI.disable(tabId).catch((e) => console.error('Error disabling action', e));
+        }
+      }
     });
 
-    browser.action.setBadgeBackgroundColor({ color: '#f45752' }).catch((e) => {
+    actionAPI.setBadgeBackgroundColor({ color: '#f45752' }).catch((e) => {
       console.error('Error setting badge background color:', e);
     });
   });
@@ -110,7 +118,7 @@ export default defineBackground(() => {
       updatePageAction().catch((e) => {
         console.error('Error updating page action on tab update:', e);
       });
-      browser.action.setBadgeBackgroundColor({ color: '#f45752' }).catch((e) => {
+      actionAPI.setBadgeBackgroundColor({ color: '#f45752' }).catch((e) => {
         console.error('Error setting badge background color on tab update:', e);
       });
     }

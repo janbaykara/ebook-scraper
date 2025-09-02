@@ -12,8 +12,18 @@ export default defineConfig({
       __APP_VERSION__: JSON.stringify(version),
     },
   }),
-  manifest: () => {
+  manifest: ({ browser }) => {
+    const permissions: string[] = ['storage', 'scripting', 'tabs', 'webRequest', 'webRequestBlocking'];
+    switch (browser) {
+      case 'chrome':
+        permissions.push('declarativeContent');
+        break;
+      case 'firefox':
+        permissions.push('declarativeNetRequest');
+        break;
+    }
     return {
+      permissions,
       host_permissions: sites.map((site) => site.urlScope),
     };
   },
