@@ -153,6 +153,39 @@ const sites: SiteConfig[] = [
         url.pathname.includes('page-scan')),
     getPageImageURL: (url) => url.toString(),
   },
+  {
+    // TODO: implement the cross-browser thingy that also does hot reload, so it's not a fkin pain in the ass to develop on
+    // TODO: autosave pages in the right order, since there's a way to identify the page number from the URL
+    // TODO: improve the preview display of the pages in the popup
+    // Reader page https://r3.vlebooks.com/Reader?ean=9781844456994
+    // includes a series of images like https://r3.vlebooks.com/reader?handler=PageImage&ean=9781844456994&pagenumber=1&imageWidth=1000
+    // the reader is a scrollable container with page-ID'd elements
+    // and the page images are loaded when you scroll to the page
+    // <div id="page12" class="pdfscrollablepage grabable" data-pg="12" style="height: 1008px; width: 704.298px;"><table class="pageLoadContainer" style="width:704px; height:1008px"><tbody><tr><td>1 What do we mean by youth work?<br>p1</td></tr></tbody></table><figure id="figsvg-12" class="figsvg"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 487 697" preserveAspectRatio="xMinYMin meet" id="svg-12"><image class="pdfpageimage" width="487" height="697" xlink:href="/reader?handler=PageImage&amp;ean=9781844456994&amp;pagenumber=12&amp;imageWidth=1000" href="/reader?handler=PageImage&amp;ean=9781844456994&amp;pagenumber=12&amp;imageWidth=1000"></image><g id="pageannotations12"><svg id="bookmark-12" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="40" height="100" x="467" preserveAspectRatio="none" class="pagebookmark " style="display: none;"><path d="M0 512V48C0 21.49 21.49 0 48 0h288c26.51 0 48 21.49 48 48v464L192 400 0 512z"></path></svg></g><g id="pageTextBoxes12"></g></svg></figure></div>
+    name: 'VLEBooks',
+    chromeURLScope: '*://r3.vlebooks.com/',
+    host: 'r3.vlebooks.com',
+    readerDomain: {
+      urlContains: 'r3.vlebooks.com/Reader?ean=',
+    },
+    constructBookURL: (_url) => {
+      return _url.toString();
+    },
+    pageResourceURLFilter: '*://*.vlebooks.com/*',
+    testPageImageURL: (_, url) => {
+      return (
+        url.pathname.includes('/reader') &&
+        url.searchParams.has('handler') &&
+        url.searchParams.get('handler') === 'PageImage' &&
+        url.searchParams.has('ean') &&
+        url.searchParams.has('pagenumber') &&
+        url.searchParams.has('imageWidth')
+      );
+    },
+    getPageImageURL: (url) => {
+      return url.toString();
+    },
+  },
 ];
 
 export default sites;

@@ -2,6 +2,7 @@ import { Box, VStack, HStack, Text, Button, Heading } from '@chakra-ui/react';
 import type { FC } from 'react';
 import { useState, useEffect, useRef } from 'react';
 
+import sites from '../common/sites';
 import { getURL, getBookURL, getBook } from '../common/utils';
 import type { Book, ScraperMessage, ClearBook, UpdatePageOrder, SaveBook } from '../types';
 
@@ -160,7 +161,8 @@ export const Popup: FC = () => {
   console.log('Rendering popup with book:', book);
 
   // Filter out only actual image pages for display
-  const imagePages = book?.pages?.filter((url) => url.includes('/docImage.action') && url.includes('encrypted=')) || [];
+  // TODO: this is a site-specific filter, move this to the site config for the ProQuest config
+  // const imagePages = book?.pages?.filter((url) => url.includes('/docImage.action') && url.includes('encrypted=')) || [];
 
   return (
     <Box
@@ -185,9 +187,9 @@ export const Popup: FC = () => {
               <Text fontSize="md" fontWeight="bold" color="gray.800">
                 Total captures: {book.pages?.length || 0}
               </Text>
-              <Text fontSize="sm" color="gray.600">
+              {/* <Text fontSize="sm" color="gray.600">
                 Valid images: {imagePages.length}
-              </Text>
+              </Text> */}
               <Text>
                 Use in a fullscreen window with pages zoomed for best quality.{' '}
                 <a
@@ -207,13 +209,13 @@ export const Popup: FC = () => {
                 colorPalette="blue"
                 size="md"
                 flex={1}
-                disabled={imagePages.length === 0}
+                // disabled={imagePages.length === 0}
                 bg="blue.500"
                 color="white"
                 _hover={{ bg: 'blue.600' }}
                 _disabled={{ bg: 'gray.300', color: 'gray.500' }}
               >
-                Download PDF ({imagePages.length} images)
+                Download PDF ({book.pages?.length || 0} images)
               </Button>
               <ResetButton reset={() => void reset()}>Reset</ResetButton>
             </HStack>
@@ -222,7 +224,7 @@ export const Popup: FC = () => {
               Show captured pages
             </Checkbox>
 
-            {imagePages.length > 0 && (
+            {book.pages?.length && book.pages.length > 0 && (
               <Box width="100%" mt={4}>
                 <Text fontSize="sm" fontWeight="medium">
                   Progress: {progress}%
@@ -261,7 +263,7 @@ export const Popup: FC = () => {
             {displayPages && (
               <Box width="100%">
                 <Text fontSize="sm" color="gray.700" mb={2} fontWeight="medium">
-                  Image Pages ({imagePages.length}):
+                  Image Pages ({book.pages?.length || 0}):
                 </Text>
                 <VStack
                   gap={2}
@@ -274,13 +276,15 @@ export const Popup: FC = () => {
                   p={2}
                   bg="gray.50"
                 >
-                  {imagePages.map((url, index) => (
+                  {book.pages?.map((url, index) => (
                     <Page
                       key={url}
                       url={url}
                       index={index}
                       moveUp={index > 0 ? () => updatePageOrder(index, index - 1) : undefined}
-                      moveDown={index < imagePages.length - 1 ? () => updatePageOrder(index, index + 1) : undefined}
+                      moveDown={
+                        index < (book.pages?.length || 0) - 1 ? () => updatePageOrder(index, index + 1) : undefined
+                      }
                       deletePage={() => void deletePage(index)}
                     />
                   ))}
@@ -291,7 +295,7 @@ export const Popup: FC = () => {
         ) : (
           <VStack gap={3} textAlign="center" py={8}>
             <Text fontSize="xl" color="gray.600">
-              Navigate to a ProQuest ebook
+              Navigate to a supported ebook reader. {sites.map((site) => site.name).join(', ')}
             </Text>
             <Text fontSize="sm" color="gray.500">
               Start reading pages to begin capturing images

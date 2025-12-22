@@ -132,7 +132,6 @@ chrome.webRequest.onCompleted.addListener(
     if (!pageImageURL) {
       return;
     }
-    console.log('Page image URL: ', pageImageURL);
     savePage(pageImageURL).catch((e) => {
       console.error('Error saving page image:', e);
     });
