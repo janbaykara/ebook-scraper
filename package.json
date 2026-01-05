@@ -24,7 +24,7 @@
     "@chakra-ui/react": "^3.24.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "jspdf": "^3.0.2",
+    "jspdf": "^4.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "vite-plugin-zip-pack": "^1.2.4"
