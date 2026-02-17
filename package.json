@@ -29,7 +29,7 @@
     "@chakra-ui/react": "^3.24.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "jspdf": "^3.0.1",
+    "jspdf": "^4.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
