@@ -2,15 +2,15 @@ import { Box, VStack, HStack, Text, Button, Heading } from '@chakra-ui/react';
 import type { FC } from 'react';
 import { useState, useEffect, useRef } from 'react';
 
-import { getURL, getBookURL, getBook } from '../common/utils';
-import type { Book, ScraperMessage, ClearBook, UpdatePageOrder, SaveBook } from '../types';
+import { createPDF } from '../../components/pdf';
+import type { Book, ScraperMessage, ClearBook, UpdatePageOrder, SaveBook } from '../../components/types';
+import { getURL, getBookURL, getBook } from '../../components/utils';
 
 import { Page, ResetButton, Checkbox } from './Components';
-import { createPDF } from './pdf';
 
 declare const __APP_VERSION__: string;
 
-export const Popup: FC = () => {
+export const App: FC = () => {
   console.log('Popup component rendering...');
 
   const [displayPages, setDisplayPages] = useState<boolean>(false);
