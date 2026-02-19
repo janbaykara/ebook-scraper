@@ -25,6 +25,7 @@ A modern browser extension to help you create PDFs from ebooks hosted on support
 3. Click through each page as they load to capture images.
 4. Click the **eBook Scraper** extension icon in your toolbar.
 5. Use the popup interface to save pages and compile your PDF.
+
 ![Screenshot](screenshot2.png)
 
 
