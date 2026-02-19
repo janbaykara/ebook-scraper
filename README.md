@@ -6,6 +6,12 @@ A modern browser extension to help you create PDFs from ebooks hosted on support
 - JStor
 - Ebook Central by ProQuest
 
+### Supported Browsers
+- Chrome
+- Firefox
+
+*This extension likely works on most Chromium and Firefox based browsers, though it's only been tested on those above*
+
 <a href="https://chromewebstore.google.com/detail/ebook-scraper/bhoifjhgahfmjkonopmmfifdfjacjeak">
 <img src="https://developer.chrome.com/static/docs/webstore/branding/image/UV4C4ybeBTsZt43U4xis.png" title="Available in the Chrome Web Store" />
 </a>
