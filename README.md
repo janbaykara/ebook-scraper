@@ -24,7 +24,7 @@ A modern browser extension to help you create PDFs from ebooks hosted on support
 2. Open an ebook you want to scrape.
 3. Click through each page as they load to capture images.
 4. Click the **eBook Scraper** extension icon in your toolbar.
-5. Use the popup interface to save pages and compile your PDF.
+5. Use the popup interface to save pages and compile your PDF. Enabling **OCR** will make the text in the PDF selectable, allowing you to copy and highlight it, though it may increase processing time.
 
 ![Screenshot](screenshot2.png)
 
@@ -52,3 +52,9 @@ Note: Attempting to save very large ebooks may max out your computer's RAM and c
    ```bash
    npx wxt build              #Chrome
    npx wxt build -b firefox   #Firefox
+
+## Acknowledgements
+This project is built using the following open-source libraries:
+- [WXT](https://github.com/wxt-dev/wxt)
+- [jsPDF](https://github.com/parallax/jsPDF)
+- [Tesseract.js](https://github.com/naptha/tesseract.js)
