@@ -1,4 +1,4 @@
-import { Box, Flex, Image, Text, Button, VStack } from '@chakra-ui/react';
+import { Box, Flex, Image, Text, Button, VStack, Tooltip } from '@chakra-ui/react';
 
 type PageParams = {
   url: string;
@@ -83,4 +83,27 @@ function CheckboxComponent({ checked, onChange, children }: CheckboxParams) {
   );
 }
 
-export { Page, ResetButton, CheckboxComponent as Checkbox };
+type TooltipProps = {
+  content: string;
+  children: React.ReactNode;
+};
+
+function CustomTooltip({ content, children }: TooltipProps) {
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>
+        <span style={{ display: 'inline-block', cursor: 'help' }}>{children}</span>
+      </Tooltip.Trigger>
+      <Tooltip.Positioner>
+        <Tooltip.Content bg="gray.800" color="white" px={3} py={1} borderRadius="md" fontSize="xs" zIndex="popover">
+          {content}
+          <Tooltip.Arrow>
+            <Tooltip.ArrowTip />
+          </Tooltip.Arrow>
+        </Tooltip.Content>
+      </Tooltip.Positioner>
+    </Tooltip.Root>
+  );
+}
+
+export { Page, ResetButton, CheckboxComponent as Checkbox, CustomTooltip as Tooltip };
