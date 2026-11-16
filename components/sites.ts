@@ -102,6 +102,35 @@ const sites: SiteConfig[] = [
     },
   },
   {
+    name: 'ProQuest Ebook Central (La Trobe Proxy)',
+    urlScope: '*://ebookcentral-proquest-com.ez.library.latrobe.edu.au/*',
+    host: 'ebookcentral-proquest-com.ez.library.latrobe.edu.au',
+    readerDomain: { hostContains: 'ebookcentral-proquest-com.ez.library.latrobe.edu.au' },
+    constructBookURL: (url: URL) => {
+      // Reader URL: /lib/latrobe/reader.action?docID=6370281&c=UERG&ppg=11
+      // Keep only docID so every page of a book maps to the same ID
+      const docID = url.searchParams.get('docID');
+      if (docID) {
+        return `${url.host}${url.pathname}?docID=${docID}`;
+      }
+
+      // Fallback
+      return url.host + url.pathname;
+    },
+    pageResourceURLFilter: '*://ebookcentral-proquest-com.ez.library.latrobe.edu.au/*/docImage.action*',
+    testPageImageURL: (_request, url) => {
+      return (
+        url.hostname === 'ebookcentral-proquest-com.ez.library.latrobe.edu.au' &&
+        url.pathname.includes('/docImage.action') &&
+        url.searchParams.has('encrypted')
+      );
+    },
+    getPageImageURL: (url: URL) => {
+      // Return the image URL directly
+      return url.href;
+    },
+  },
+  {
     name: 'ProQuest Ebook Central',
     urlScope: '*://*.proquest.com/*',
     host: 'ebookcentral.proquest.com',
