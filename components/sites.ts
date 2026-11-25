@@ -162,7 +162,8 @@ const sites: SiteConfig[] = [
   },
   {
     name: 'JStor',
-    urlScope: '*://www.jstor.org/',
+    // '/*' so the permission covers the reader pages and page images, not only the home page
+    urlScope: '*://www.jstor.org/*',
     host: 'www.jstor.org',
     readerDomain: {
       urlContains: 'jstor.org/stable/',
